@@ -1,0 +1,48 @@
+<Project Sdk="Uno.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net9.0-android;net9.0-browserwasm;net9.0-desktop;net9.0</TargetFrameworks>
+    <!-- iOS removed - requires macOS to build. Add back: net9.0-ios when building on Mac -->
+
+    <OutputType>Exe</OutputType>
+    <UnoSingleProject>true</UnoSingleProject>
+
+    <!-- Display name -->
+    <ApplicationTitle>CalendarApp</ApplicationTitle>
+    <!-- App Identifier -->
+    <ApplicationId>com.companyname.calendarapp</ApplicationId>
+    <!-- Versions -->
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <!-- Package Publisher -->
+    <ApplicationPublisher>CalendarApp</ApplicationPublisher>
+    <!-- Package Description -->
+    <Description>CalendarApp powered by Uno Platform.</Description>
+
+    <!--
+      UnoFeatures are used to quickly add and manage features enabled for your app.
+      https://aka.platform.uno/singleproject-features
+    -->
+    <UnoFeatures>
+      Material;
+      Dsp;
+      Hosting;
+      Toolkit;
+      Logging;
+      Mvvm;
+      Configuration;
+      HttpKiota;
+      Serialization;
+      Localization;
+      Navigation;
+      ThemeService;
+      SkiaRenderer;
+    </UnoFeatures>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- SQLite for local storage -->
+    <PackageReference Include="sqlite-net-pcl" />
+    <PackageReference Include="SQLitePCLRaw.bundle_green" />
+  </ItemGroup>
+
+</Project>
