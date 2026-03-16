@@ -74,6 +74,11 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore CalendarApp/CalendarApp/CalendarApp.csproj
 
+      - name: Decode Google credentials
+        shell: bash
+        run: |
+          echo "${{ secrets.GOOGLE_CREDENTIALS_JSON_BASE64 }}" | base64 -d > CalendarApp/CalendarApp/credentials.json
+
       - name: Publish (self-contained)
         run: >
           dotnet publish CalendarApp/CalendarApp/CalendarApp.csproj
@@ -122,6 +127,11 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore CalendarApp/CalendarApp/CalendarApp.csproj
+
+      - name: Decode Google credentials
+        shell: bash
+        run: |
+          echo "${{ secrets.GOOGLE_CREDENTIALS_JSON_BASE64 }}" | base64 -d > CalendarApp/CalendarApp/credentials.json
 
       # Release APK, signed with keystore stored in GitHub Secrets.
       # Set up these four secrets in your repo → Settings → Secrets:

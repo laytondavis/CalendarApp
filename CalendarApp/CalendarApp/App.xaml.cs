@@ -174,6 +174,9 @@ public partial class App : Application
             // Restore persisted settings
             await RestoreSettingsAsync();
 
+            // Copy credentials.json from bundled location to AppData on first install
+            await EnsureCredentialsInstalledAsync();
+
             // Initialize read-only Google accounts from config
             await InitializeReadOnlyGoogleAccountsAsync();
 
@@ -232,6 +235,53 @@ public partial class App : Application
         catch (Exception ex)
         {
             Console.WriteLine($"[CalendarApp] Error restoring settings: {ex}");
+        }
+    }
+
+    /// <summary>
+    /// On the first launch after install, copies credentials.json from the bundled
+    /// location to the AppData folder that GoogleAuthService reads from.
+    /// Desktop: copies from the app's base directory (included via &lt;Content&gt; in .csproj).
+    /// Android: extracts from the APK assets folder (included via &lt;AndroidAsset&gt; in .csproj).
+    /// No-ops if the destination file already exists.
+    /// </summary>
+    private static async Task EnsureCredentialsInstalledAsync()
+    {
+        try
+        {
+            var destFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "CalendarApp");
+            var destPath = Path.Combine(destFolder, "credentials.json");
+
+            if (File.Exists(destPath)) return;
+
+            Directory.CreateDirectory(destFolder);
+
+#if __ANDROID__
+            using var assetStream = Android.App.Application.Context.Assets!.Open("credentials.json");
+            using var destStream = File.Create(destPath);
+            await assetStream.CopyToAsync(destStream);
+            Console.WriteLine("[CalendarApp] credentials.json installed from Android asset.");
+#elif __SKIA__
+            var srcPath = Path.Combine(AppContext.BaseDirectory, "credentials.json");
+            if (File.Exists(srcPath))
+            {
+                File.Copy(srcPath, destPath, overwrite: false);
+                Console.WriteLine("[CalendarApp] credentials.json installed from app directory.");
+            }
+            else
+            {
+                Console.WriteLine("[CalendarApp] credentials.json not bundled — Google sign-in unavailable.");
+            }
+            await Task.CompletedTask;
+#else
+            await Task.CompletedTask;
+#endif
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[CalendarApp] EnsureCredentialsInstalledAsync failed: {ex.Message}");
         }
     }
 

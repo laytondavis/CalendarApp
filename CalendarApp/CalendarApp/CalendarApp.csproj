@@ -54,4 +54,18 @@
     <PackageReference Include="Velopack" />
   </ItemGroup>
 
+  <!--
+    Bundle Google OAuth credentials when present.
+    credentials.json is NEVER committed to git — it is decoded from the
+    GOOGLE_CREDENTIALS_JSON_BASE64 GitHub Secret during CI before publish.
+    Local dev builds without the file are unaffected (Condition guards the include).
+  -->
+  <ItemGroup Condition="$(TargetFramework.Contains('desktop')) And Exists('credentials.json')">
+    <Content Include="credentials.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('android')) And Exists('credentials.json')">
+    <AndroidAsset Include="credentials.json" />
+  </ItemGroup>
+
 </Project>
