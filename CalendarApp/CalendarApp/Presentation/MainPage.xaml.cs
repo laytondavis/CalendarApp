@@ -14,6 +14,12 @@ public sealed partial class MainPage : Page
     {
         this.InitializeComponent();
         this.DataContextChanged += OnDataContextChanged;
+
+        // Set in code-behind because Uno's XAML parser rejects space-separated
+        // ManipulationModes flags — must use the bitwise enum combination instead.
+        RootGrid.ManipulationMode =
+            Microsoft.UI.Xaml.Input.ManipulationModes.TranslateX |
+            Microsoft.UI.Xaml.Input.ManipulationModes.TranslateInertia;
     }
 
     private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
