@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CalendarApp splash screen.
+  Displays the three-calendar fan icon centred on a white background.
+  Uno Resizetizer scales this SVG to the native splash dimensions for
+  each target platform.
+-->
+<svg width="450" height="450" viewBox="0 0 450 450"
+     xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <linearGradient id="sp_blue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#42A5F5"/>
+      <stop offset="100%" stop-color="#1565C0"/>
+    </linearGradient>
+    <linearGradient id="sp_purple" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#CE93D8"/>
+      <stop offset="100%" stop-color="#6A1B9A"/>
+    </linearGradient>
+    <linearGradient id="sp_amber" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#FFB74D"/>
+      <stop offset="100%" stop-color="#E65100"/>
+    </linearGradient>
+    <filter id="sp_shadow" x="-35%" y="-35%" width="170%" height="170%">
+      <feDropShadow dx="0" dy="8" stdDeviation="14"
+                   flood-color="#000000" flood-opacity="0.28"/>
+    </filter>
+    <clipPath id="sp_calClip">
+      <rect x="138" y="90" width="180" height="240" rx="20"/>
+    </clipPath>
+    <mask id="sp_moonMask">
+      <circle cx="277" cy="122" r="13" fill="white"/>
+      <circle cx="267" cy="118" r="11" fill="black"/>
+    </mask>
+  </defs>
+
+  <!-- White background -->
+  <rect width="450" height="450" fill="#FFFFFF"/>
+
+  <!--
+    Centre the 456 × 456 icon design in a 280 × 280 area inside the
+    450 × 450 splash canvas.
+      scale = 280 / 456 ≈ 0.6140
+      offset = (450 – 280) / 2 = 85
+  -->
+  <g transform="translate(85, 85) scale(0.6140)">
+
+    <!-- Julian calendar (back-left, purple, –15°) -->
+    <g transform="rotate(-15, 228, 330)">
+      <rect x="138" y="90" width="180" height="240" rx="20"
+            fill="url(#sp_purple)"/>
+      <rect x="138" y="90"  width="180" height="65" rx="20" fill="#6A1B9A"/>
+      <rect x="138" y="120" width="180" height="35"          fill="#6A1B9A"/>
+      <circle cx="158" cy="175" r="6" fill="white" opacity="0.4"/>
+      <circle cx="193" cy="175" r="6" fill="white" opacity="0.4"/>
+      <circle cx="228" cy="175" r="6" fill="white" opacity="0.4"/>
+      <circle cx="263" cy="175" r="6" fill="white" opacity="0.4"/>
+      <circle cx="298" cy="175" r="6" fill="white" opacity="0.4"/>
+      <circle cx="158" cy="205" r="6" fill="white" opacity="0.4"/>
+      <circle cx="193" cy="205" r="6" fill="white" opacity="0.4"/>
+      <circle cx="228" cy="205" r="6" fill="white" opacity="0.4"/>
+      <circle cx="263" cy="205" r="6" fill="white" opacity="0.4"/>
+      <circle cx="298" cy="205" r="6" fill="white" opacity="0.4"/>
+      <circle cx="158" cy="235" r="6" fill="white" opacity="0.4"/>
+      <circle cx="193" cy="235" r="6" fill="white" opacity="0.4"/>
+      <circle cx="228" cy="235" r="6" fill="white" opacity="0.4"/>
+      <circle cx="263" cy="235" r="6" fill="white" opacity="0.4"/>
+      <circle cx="158" cy="265" r="6" fill="white" opacity="0.4"/>
+      <circle cx="193" cy="265" r="6" fill="white" opacity="0.4"/>
+      <circle cx="228" cy="265" r="6" fill="white" opacity="0.4"/>
+      <circle cx="158" cy="295" r="6" fill="white" opacity="0.4"/>
+      <circle cx="193" cy="295" r="6" fill="white" opacity="0.4"/>
+    </g>
+
+    <!-- Biblical calendar (back-right, amber, +15°) -->
+    <g transform="rotate(15, 228, 330)">
+      <rect x="138" y="90" width="180" height="240" rx="20"
+            fill="url(#sp_amber)"/>
+      <rect x="138" y="90"  width="180" height="65" rx="20" fill="#BF360C"/>
+      <rect x="138" y="120" width="180" height="35"          fill="#BF360C"/>
+      <circle cx="158" cy="175" r="6" fill="white" opacity="0.4"/>
+      <circle cx="193" cy="175" r="6" fill="white" opacity="0.4"/>
+      <circle cx="228" cy="175" r="6" fill="white" opacity="0.4"/>
+      <circle cx="263" cy="175" r="6" fill="white" opacity="0.4"/>
+      <circle cx="298" cy="175" r="6" fill="white" opacity="0.4"/>
+      <circle cx="158" cy="205" r="6" fill="white" opacity="0.4"/>
+      <circle cx="193" cy="205" r="6" fill="white" opacity="0.4"/>
+      <circle cx="228" cy="205" r="6" fill="white" opacity="0.4"/>
+      <circle cx="263" cy="205" r="6" fill="white" opacity="0.4"/>
+      <circle cx="298" cy="205" r="6" fill="white" opacity="0.4"/>
+      <circle cx="158" cy="235" r="6" fill="white" opacity="0.4"/>
+      <circle cx="193" cy="235" r="6" fill="white" opacity="0.4"/>
+      <circle cx="228" cy="235" r="6" fill="white" opacity="0.4"/>
+      <circle cx="263" cy="235" r="6" fill="white" opacity="0.4"/>
+      <circle cx="158" cy="265" r="6" fill="white" opacity="0.4"/>
+      <circle cx="193" cy="265" r="6" fill="white" opacity="0.4"/>
+      <circle cx="228" cy="265" r="6" fill="white" opacity="0.4"/>
+      <circle cx="158" cy="295" r="6" fill="white" opacity="0.4"/>
+      <circle cx="193" cy="295" r="6" fill="white" opacity="0.4"/>
+    </g>
+
+    <!-- Gregorian calendar (front, blue) -->
+    <rect x="138" y="90" width="180" height="240" rx="20"
+          fill="url(#sp_blue)" filter="url(#sp_shadow)"/>
+    <rect x="138" y="90" width="180" height="240" rx="20"
+          fill="url(#sp_blue)"/>
+    <rect x="138" y="90" width="180" height="65"
+          fill="#1565C0" clip-path="url(#sp_calClip)"/>
+
+    <!-- Sun ☀ -->
+    <circle cx="178" cy="122" r="12" fill="#FFD54F"/>
+    <line x1="178" y1="104" x2="178" y2="100" stroke="#FFD54F" stroke-width="4" stroke-linecap="round"/>
+    <line x1="178" y1="140" x2="178" y2="144" stroke="#FFD54F" stroke-width="4" stroke-linecap="round"/>
+    <line x1="160" y1="122" x2="156" y2="122" stroke="#FFD54F" stroke-width="4" stroke-linecap="round"/>
+    <line x1="196" y1="122" x2="200" y2="122" stroke="#FFD54F" stroke-width="4" stroke-linecap="round"/>
+    <line x1="165" y1="109" x2="162" y2="106" stroke="#FFD54F" stroke-width="4" stroke-linecap="round"/>
+    <line x1="191" y1="135" x2="194" y2="138" stroke="#FFD54F" stroke-width="4" stroke-linecap="round"/>
+    <line x1="191" y1="109" x2="194" y2="106" stroke="#FFD54F" stroke-width="4" stroke-linecap="round"/>
+    <line x1="165" y1="135" x2="162" y2="138" stroke="#FFD54F" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- Crescent moon ☽ -->
+    <circle cx="277" cy="122" r="13" fill="#E3F2FD" mask="url(#sp_moonMask)"/>
+
+    <!-- Calendar dot grid -->
+    <circle cx="158" cy="175" r="7" fill="white" opacity="0.9"/>
+    <circle cx="193" cy="175" r="7" fill="white" opacity="0.9"/>
+    <circle cx="228" cy="175" r="7" fill="white" opacity="0.9"/>
+    <circle cx="263" cy="175" r="7" fill="white" opacity="0.9"/>
+    <circle cx="298" cy="175" r="7" fill="white" opacity="0.9"/>
+    <circle cx="158" cy="205" r="7" fill="white" opacity="0.9"/>
+    <circle cx="193" cy="205" r="7" fill="white" opacity="0.9"/>
+    <circle cx="228" cy="205" r="9" fill="white"/>
+    <circle cx="263" cy="205" r="7" fill="white" opacity="0.9"/>
+    <circle cx="298" cy="205" r="7" fill="white" opacity="0.9"/>
+    <circle cx="158" cy="235" r="7" fill="white" opacity="0.9"/>
+    <circle cx="193" cy="235" r="7" fill="white" opacity="0.9"/>
+    <circle cx="228" cy="235" r="7" fill="white" opacity="0.9"/>
+    <circle cx="263" cy="235" r="7" fill="white" opacity="0.9"/>
+    <circle cx="298" cy="235" r="7" fill="white" opacity="0.9"/>
+    <circle cx="158" cy="265" r="7" fill="white" opacity="0.9"/>
+    <circle cx="193" cy="265" r="7" fill="white" opacity="0.9"/>
+    <circle cx="228" cy="265" r="7" fill="white" opacity="0.9"/>
+    <circle cx="263" cy="265" r="7" fill="white" opacity="0.9"/>
+    <circle cx="158" cy="295" r="7" fill="white" opacity="0.9"/>
+    <circle cx="193" cy="295" r="7" fill="white" opacity="0.9"/>
+    <circle cx="228" cy="295" r="7" fill="white" opacity="0.9"/>
+
+  </g>
+</svg>

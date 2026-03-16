@@ -1,0 +1,51 @@
+<Application x:Class="CalendarApp.App"
+       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+       xmlns:utum="using:Uno.Toolkit.UI.Material"
+       xmlns:converters="using:CalendarApp.Converters">
+
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <!-- Load WinUI resources -->
+        <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+        <utum:MaterialToolkitTheme
+          ColorOverrideSource="ms-appx:///Styles/ColorPaletteOverride.xaml">
+          <!-- NOTE: You can override the default Roboto font by providing your font assets here. -->
+          <!-- <utum:MaterialToolkitTheme.FontOverrideDictionary>
+            <ResourceDictionary>
+              <FontFamily x:Key="MaterialLightFontFamily">ms-appx:///Uno.Fonts.Roboto/Fonts/Roboto-Light.ttf#Roboto</FontFamily>
+              <FontFamily x:Key="MaterialMediumFontFamily">ms-appx:///Uno.Fonts.Roboto/Fonts/Roboto-Medium.ttf#Roboto</FontFamily>
+              <FontFamily x:Key="MaterialRegularFontFamily">ms-appx:///Uno.Fonts.Roboto/Fonts/Roboto-Regular.ttf#Roboto</FontFamily>
+            </ResourceDictionary>
+          </utum:MaterialToolkitTheme.FontOverrideDictionary> -->
+        </utum:MaterialToolkitTheme>
+      </ResourceDictionary.MergedDictionaries>
+
+      <!-- ToggleButton style for selector buttons -->
+      <Style x:Key="SelectorToggleButtonStyle" TargetType="ToggleButton">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="MinWidth" Value="60" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+      </Style>
+
+      <!-- Converters -->
+      <converters:BoolToFontWeightConverter x:Key="BoolToFontWeightConverter" />
+      <converters:BoolToForegroundConverter x:Key="BoolToForegroundConverter" />
+      <converters:BoolToOpacityConverter x:Key="BoolToOpacityConverter" />
+      <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+      <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+      <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+      <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+      <converters:BoolToActiveBackgroundConverter x:Key="BoolToActiveBackgroundConverter" />
+      <converters:BoolToActiveForegroundConverter x:Key="BoolToActiveForegroundConverter" />
+
+    </ResourceDictionary>
+  </Application.Resources>
+
+</Application>

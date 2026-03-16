@@ -1,0 +1,57 @@
+# ── Build output ─────────────────────────────────────────────────────────────
+[Oo]bj/
+[Bb]in/
+publish/
+releases/
+
+# ── NuGet ────────────────────────────────────────────────────────────────────
+*.nupkg
+*.snupkg
+**/[Pp]ackages/
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+# ── Visual Studio / Rider ────────────────────────────────────────────────────
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.db
+*.opendb
+*.rsuser
+
+# ── Uno Platform ─────────────────────────────────────────────────────────────
+.uno/
+
+# ── .NET test results ────────────────────────────────────────────────────────
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+
+# ── macOS ─────────────────────────────────────────────────────────────────────
+.DS_Store
+*.dmg
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+*.tlog
+
+# ── Sensitive / local-only config ────────────────────────────────────────────
+# Keep appsettings.json (it has the GithubRepo URL but no secrets).
+# Override locally with appsettings.Development.json if needed.
+appsettings.Development.json
+appsettings.*.local.json
+
+# Google OAuth credentials — never commit these
+credentials.json
+token.json
+**/CalendarApp/credentials.json
+**/CalendarApp/token*.json
+
+# Android signing keystore — store as a GitHub Secret (base64), not here
+*.jks
+*.keystore
+android.keystore

@@ -1,0 +1,79 @@
+<ResourceDictionary xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <!-- Classic macOS X / Aqua palette
+       Mac OS X (10.0 – 10.4) "Aqua" used a steel-blue accent, a cool
+       pinstripe-gray background, and brushed-metal chrome for media apps.
+       Primary accent: the deep Aqua blue used for selection highlights (#1C62B3).
+       Background: the classic light-gray pinstripe (#E5E5E5).
+       Surface: slightly warmer off-white reminiscent of Aqua window chrome. -->
+  <ResourceDictionary.ThemeDictionaries>
+
+    <ResourceDictionary x:Key="Light">
+      <Color x:Key="PrimaryColor">#1C62B3</Color>
+      <Color x:Key="OnPrimaryColor">#FFFFFF</Color>
+      <Color x:Key="PrimaryContainerColor">#B8D5F7</Color>
+      <Color x:Key="OnPrimaryContainerColor">#003166</Color>
+      <!-- Teal-grey secondary — evokes the aqua sheen of scroll bars and buttons -->
+      <Color x:Key="SecondaryColor">#4A7A8E</Color>
+      <Color x:Key="OnSecondaryColor">#FFFFFF</Color>
+      <Color x:Key="SecondaryContainerColor">#C2E2EC</Color>
+      <Color x:Key="OnSecondaryContainerColor">#003542</Color>
+      <!-- Earthy sage — present in many Aqua icons and brushed-metal toolbars -->
+      <Color x:Key="TertiaryColor">#5B6E3D</Color>
+      <Color x:Key="OnTertiaryColor">#FFFFFF</Color>
+      <Color x:Key="TertiaryContainerColor">#D8E7C0</Color>
+      <Color x:Key="OnTertiaryContainerColor">#1A2500</Color>
+      <Color x:Key="ErrorColor">#B3261E</Color>
+      <Color x:Key="ErrorContainerColor">#F9DEDC</Color>
+      <Color x:Key="OnErrorColor">#FFFFFF</Color>
+      <Color x:Key="OnErrorContainerColor">#410E0B</Color>
+      <!-- Classic Aqua pinstripe background: cool light gray -->
+      <Color x:Key="BackgroundColor">#E5E5E5</Color>
+      <Color x:Key="OnBackgroundColor">#1A1A1A</Color>
+      <!-- Window chrome: slightly warm off-white -->
+      <Color x:Key="SurfaceColor">#F0F0F0</Color>
+      <Color x:Key="OnSurfaceColor">#1A1A1A</Color>
+      <!-- Brushed-metal feel for surface variant -->
+      <Color x:Key="SurfaceVariantColor">#D8D8DC</Color>
+      <Color x:Key="OnSurfaceVariantColor">#55555A</Color>
+      <Color x:Key="OutlineColor">#A8A8B0</Color>
+      <Color x:Key="OnSurfaceInverseColor">#E5E5E5</Color>
+      <Color x:Key="SurfaceInverseColor">#323238</Color>
+      <Color x:Key="PrimaryInverseColor">#7EB8F7</Color>
+      <Color x:Key="SurfaceTintColor">#1C62B3</Color>
+      <Color x:Key="OutlineVariantColor">#BBBBBF</Color>
+    </ResourceDictionary>
+
+    <ResourceDictionary x:Key="Dark">
+      <Color x:Key="PrimaryColor">#1C62B3</Color>
+      <Color x:Key="OnPrimaryColor">#FFFFFF</Color>
+      <Color x:Key="PrimaryContainerColor">#B8D5F7</Color>
+      <Color x:Key="OnPrimaryContainerColor">#003166</Color>
+      <Color x:Key="SecondaryColor">#4A7A8E</Color>
+      <Color x:Key="OnSecondaryColor">#FFFFFF</Color>
+      <Color x:Key="SecondaryContainerColor">#C2E2EC</Color>
+      <Color x:Key="OnSecondaryContainerColor">#003542</Color>
+      <Color x:Key="TertiaryColor">#5B6E3D</Color>
+      <Color x:Key="OnTertiaryColor">#FFFFFF</Color>
+      <Color x:Key="TertiaryContainerColor">#D8E7C0</Color>
+      <Color x:Key="OnTertiaryContainerColor">#1A2500</Color>
+      <Color x:Key="ErrorColor">#B3261E</Color>
+      <Color x:Key="ErrorContainerColor">#F9DEDC</Color>
+      <Color x:Key="OnErrorColor">#FFFFFF</Color>
+      <Color x:Key="OnErrorContainerColor">#410E0B</Color>
+      <Color x:Key="BackgroundColor">#E5E5E5</Color>
+      <Color x:Key="OnBackgroundColor">#1A1A1A</Color>
+      <Color x:Key="SurfaceColor">#F0F0F0</Color>
+      <Color x:Key="OnSurfaceColor">#1A1A1A</Color>
+      <Color x:Key="SurfaceVariantColor">#D8D8DC</Color>
+      <Color x:Key="OnSurfaceVariantColor">#55555A</Color>
+      <Color x:Key="OutlineColor">#A8A8B0</Color>
+      <Color x:Key="OnSurfaceInverseColor">#E5E5E5</Color>
+      <Color x:Key="SurfaceInverseColor">#323238</Color>
+      <Color x:Key="PrimaryInverseColor">#7EB8F7</Color>
+      <Color x:Key="SurfaceTintColor">#1C62B3</Color>
+      <Color x:Key="OutlineVariantColor">#BBBBBF</Color>
+    </ResourceDictionary>
+
+  </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

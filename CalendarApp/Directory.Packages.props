@@ -1,0 +1,24 @@
+<Project ToolsVersion="15.0">
+  <!--
+    To update the version of Uno, you should instead update the Sdk version in the global.json file.
+
+    See https://aka.platform.uno/using-uno-sdk for more information.
+    See https://aka.platform.uno/using-uno-sdk#implicit-packages for more information regarding the Implicit Packages.
+  -->
+  <ItemGroup>
+    <!-- Test packages -->
+    <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+    <PackageVersion Include="FluentAssertions" Version="6.12.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageVersion Include="NUnit" Version="4.1.0" />
+    <PackageVersion Include="NUnit3TestAdapter" Version="4.5.0" />
+
+    <!-- SQLite for local storage -->
+    <PackageVersion Include="sqlite-net-pcl" Version="1.9.172" />
+    <PackageVersion Include="SQLitePCLRaw.bundle_green" Version="2.1.10" />
+
+    <!-- Google Calendar API -->
+    <PackageVersion Include="Google.Apis.Calendar.v3" Version="1.69.0.3667" />
+    <PackageVersion Include="Google.Apis.Auth" Version="1.69.0" />
+  </ItemGroup>
+</Project>

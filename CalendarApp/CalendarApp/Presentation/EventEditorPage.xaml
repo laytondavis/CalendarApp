@@ -1,0 +1,274 @@
+<Page x:Class="CalendarApp.Presentation.EventEditorPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:local="using:CalendarApp.Presentation"
+      xmlns:utu="using:Uno.Toolkit.UI"
+      Background="{ThemeResource BackgroundBrush}">
+
+    <Grid utu:SafeArea.Insets="VisibleBounds">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header: Title on left, Cancel + Save on right -->
+        <Grid Grid.Row="0"
+              Padding="12,6"
+              Background="{ThemeResource NavigationViewTopPaneBackground}"
+              BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+              BorderThickness="0,0,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       Text="{Binding PageTitle}"
+                       VerticalAlignment="Center"
+                       Style="{StaticResource SubtitleTextBlockStyle}" />
+
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                <Button Content="Cancel"
+                        Command="{Binding CancelCommand}"
+                        Style="{StaticResource TextButtonStyle}" />
+                <Button Content="Save"
+                        Command="{Binding SaveCommand}"
+                        Style="{StaticResource AccentButtonStyle}" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Scrollable form content -->
+        <ScrollViewer Grid.Row="1" Padding="16">
+            <StackPanel Spacing="16" MaxWidth="600">
+
+                <!-- Error Message -->
+                <Border Background="#FFF0F0"
+                        CornerRadius="8"
+                        Padding="12"
+                        Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}">
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               Foreground="#D32F2F"
+                               TextWrapping="Wrap" />
+                </Border>
+
+                <!-- Title -->
+                <TextBox Header="Title"
+                         Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="Add title"
+                         FontSize="20" />
+
+                <!-- All Day Toggle (header as separate TextBlock for reliability) -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="All day"
+                               Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <ToggleSwitch IsOn="{Binding IsAllDay, Mode=TwoWay}"
+                                  OffContent="Timed event"
+                                  OnContent="All day event" />
+                </StackPanel>
+
+                <!-- Start Date/Time -->
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Start"
+                               Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <DatePicker Date="{Binding StartDate, Mode=TwoWay}"
+                                    Header="Date"
+                                    HorizontalAlignment="Stretch" />
+                        <TimePicker Grid.Column="1"
+                                    Time="{Binding StartTime, Mode=TwoWay}"
+                                    Header="Time"
+                                    HorizontalAlignment="Stretch"
+                                    Margin="8,0,0,0"
+                                    Visibility="{Binding ShowTimePickers, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </Grid>
+                </StackPanel>
+
+                <!-- End Date/Time -->
+                <StackPanel Spacing="8">
+                    <TextBlock Text="End"
+                               Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <DatePicker Date="{Binding EndDate, Mode=TwoWay}"
+                                    Header="Date"
+                                    HorizontalAlignment="Stretch" />
+                        <TimePicker Grid.Column="1"
+                                    Time="{Binding EndTime, Mode=TwoWay}"
+                                    Header="Time"
+                                    HorizontalAlignment="Stretch"
+                                    Margin="8,0,0,0"
+                                    Visibility="{Binding ShowTimePickers, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </Grid>
+                </StackPanel>
+
+                <!-- Location -->
+                <TextBox Header="Location"
+                         Text="{Binding Location, Mode=TwoWay}"
+                         PlaceholderText="Add location" />
+
+                <!-- Description -->
+                <TextBox Header="Description"
+                         Text="{Binding Description, Mode=TwoWay}"
+                         PlaceholderText="Add description"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         MinHeight="100" />
+
+                <!-- Calendar Mode -->
+                <ComboBox Header="Calendar Mode"
+                          SelectedIndex="{Binding SelectedCalendarModeIndex, Mode=TwoWay}"
+                          ItemsSource="{Binding CalendarModeNames}"
+                          HorizontalAlignment="Stretch" />
+
+                <!-- Visible On (Event Scope) -->
+                <ComboBox Header="Visible On"
+                          SelectedIndex="{Binding SelectedEventScopeIndex, Mode=TwoWay}"
+                          ItemsSource="{Binding EventScopeNames}"
+                          HorizontalAlignment="Stretch" />
+
+                <!-- Color (inline — no flyout) -->
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Color"
+                               Style="{StaticResource BodyStrongTextBlockStyle}" />
+
+                    <!-- Current color preview + hex label -->
+                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <Border Width="28" Height="28"
+                                CornerRadius="14"
+                                Background="{Binding SelectedColor, Converter={StaticResource HexToBrushConverter}}" />
+                        <TextBlock Text="{Binding SelectedColor}"
+                                   VerticalAlignment="Center"
+                                   Style="{StaticResource CaptionTextBlockStyle}" />
+                    </StackPanel>
+
+                    <!-- Preset swatches (horizontal scroll, single row) -->
+                    <ListBox ItemsSource="{Binding ColorOptions}"
+                             SelectedItem="{Binding SelectedColorOption, Mode=TwoWay}"
+                             SelectionMode="Single"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                             ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Padding" Value="2" />
+                                <Setter Property="MinHeight" Value="0" />
+                                <Setter Property="MinWidth" Value="0" />
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="local:EventColorOption">
+                                <Grid Width="36" Height="36"
+                                      ToolTipService.ToolTip="{x:Bind Name}">
+                                    <Ellipse Width="28" Height="28"
+                                             Fill="{x:Bind Hex, Converter={StaticResource HexToBrushConverter}}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- Custom ColorPicker (inline, form scrolls to reach it) -->
+                    <ColorPicker SelectedColor="{Binding SelectedColorAsColor, Mode=TwoWay}"
+                                 IsAlphaEnabled="False"
+                                 IsHexInputVisible="True"
+                                 ColorSpectrumShape="Ring"
+                                 HorizontalAlignment="Left" />
+                </StackPanel>
+
+                <!-- Reminder -->
+                <ComboBox Header="Reminder"
+                          SelectedIndex="{Binding SelectedReminderIndex, Mode=TwoWay}"
+                          ItemsSource="{Binding ReminderDisplayNames}"
+                          HorizontalAlignment="Stretch" />
+
+                <!-- Recurrence -->
+                <ComboBox Header="Repeat"
+                          SelectedIndex="{Binding SelectedRecurrenceIndex, Mode=TwoWay}"
+                          ItemsSource="{Binding RecurrenceDisplayNames}"
+                          HorizontalAlignment="Stretch" />
+
+                <!-- Recurrence end date -->
+                <CheckBox Content="Repeat until a date"
+                          IsChecked="{Binding HasRecurrenceEndDate, Mode=TwoWay}"
+                          Visibility="{Binding ShowRecurrenceOptions, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                <DatePicker Header="Repeat end date"
+                            Date="{Binding RecurrenceEndDate, Mode=TwoWay}"
+                            Visibility="{Binding ShowRecurrenceEndDatePicker, Converter={StaticResource BoolToVisibilityConverter}}"
+                            HorizontalAlignment="Stretch" />
+
+                <!-- Google Calendar section -->
+                <Border CornerRadius="8"
+                        Padding="12"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                        BorderThickness="1">
+                    <StackPanel Spacing="10">
+
+                        <!-- Source info (always shown) -->
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="Source:"
+                                       Style="{StaticResource CaptionTextBlockStyle}"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding EventSourceText}"
+                                       Style="{StaticResource CaptionTextBlockStyle}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+
+                        <!-- Google Calendar picker (for local → push, or Google → move) -->
+                        <ComboBox Header="{Binding GoogleCalendarPickerHeader}"
+                                  SelectedIndex="{Binding SelectedGoogleCalendarIndex, Mode=TwoWay}"
+                                  ItemsSource="{Binding GoogleCalendarPickerItems}"
+                                  HorizontalAlignment="Stretch"
+                                  Visibility="{Binding ShowGoogleCalendarSection, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                        <!-- Remove from Google (make local) -->
+                        <Button Content="Remove from Google Calendar (make local)"
+                                Command="{Binding MakeLocalCommand}"
+                                HorizontalAlignment="Stretch"
+                                Foreground="#D32F2F"
+                                Style="{StaticResource TextButtonStyle}"
+                                Visibility="{Binding ShowMakeLocalButton, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                    </StackPanel>
+                </Border>
+
+                <!-- Delete Button (edit mode only) -->
+                <Button Content="Delete Event"
+                        Command="{Binding DeleteCommand}"
+                        Visibility="{Binding CanDelete, Converter={StaticResource BoolToVisibilityConverter}}"
+                        HorizontalAlignment="Stretch"
+                        Foreground="#D32F2F"
+                        Margin="0,16,0,0"
+                        Style="{StaticResource TextButtonStyle}" />
+
+                <!-- Bottom spacing -->
+                <Border Height="32" />
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Loading Indicator -->
+        <ProgressRing Grid.RowSpan="2"
+                      IsActive="{Binding IsBusy}"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Width="48"
+                      Height="48" />
+    </Grid>
+</Page>

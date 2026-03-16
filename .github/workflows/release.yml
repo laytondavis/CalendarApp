@@ -1,0 +1,147 @@
+name: Build and Release
+
+# Trigger: push a version tag like  git tag v1.2.3 && git push --tags
+on:
+  push:
+    tags:
+      - 'v[0-9]*'
+
+jobs:
+  # ── Windows installer (Velopack) ──────────────────────────────────────────
+  windows:
+    name: Windows — Velopack installer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
+      - name: Install Velopack CLI
+        run: dotnet tool install -g vpk
+
+      - name: Restore dependencies
+        run: dotnet restore CalendarApp/CalendarApp/CalendarApp.csproj
+
+      - name: Publish (self-contained)
+        run: >
+          dotnet publish CalendarApp/CalendarApp/CalendarApp.csproj
+          -c Release
+          -f net9.0-desktop
+          --self-contained true
+          -o publish/desktop
+
+      # Strip the leading 'v' from the tag (v1.2.3 → 1.2.3) for Velopack
+      - name: Pack with Velopack
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          vpk pack `
+            --packId    CalendarApp `
+            --packVersion $version `
+            --packDir   publish/desktop `
+            --outputDir releases/windows `
+            --mainExe   CalendarApp.exe
+
+      - name: Upload Windows release files
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          path: releases/windows/
+
+  # ── Android APK ──────────────────────────────────────────────────────────
+  android:
+    name: Android — APK
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
+      - name: Setup Java 17 (required by Android SDK)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+
+      - name: Install Android workload
+        run: dotnet workload install android
+
+      - name: Restore dependencies
+        run: dotnet restore CalendarApp/CalendarApp/CalendarApp.csproj
+
+      # Release APK, signed with keystore stored in GitHub Secrets.
+      # Set up these four secrets in your repo → Settings → Secrets:
+      #   ANDROID_KEYSTORE_BASE64   base64-encoded .jks file
+      #   ANDROID_KEY_ALIAS         key alias inside the keystore
+      #   ANDROID_KEY_PASS          key password
+      #   ANDROID_STORE_PASS        keystore password
+      - name: Decode keystore
+        shell: bash
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android.keystore
+
+      - name: Publish Android
+        shell: pwsh
+        run: >
+          dotnet publish CalendarApp/CalendarApp/CalendarApp.csproj
+          -c Release
+          -f net9.0-android
+          -o publish/android
+          -p:AndroidSigningKeyStore="$(Resolve-Path android.keystore)"
+          -p:AndroidSigningKeyAlias="${{ secrets.ANDROID_KEY_ALIAS }}"
+          -p:AndroidSigningKeyPass="${{ secrets.ANDROID_KEY_PASS }}"
+          -p:AndroidSigningStorePass="${{ secrets.ANDROID_STORE_PASS }}"
+
+      - name: Find signed APK
+        id: find_apk
+        shell: pwsh
+        run: |
+          $apk = Get-ChildItem -Path publish/android -Filter "*-Signed.apk" -Recurse |
+                 Select-Object -First 1
+          if (-not $apk) {
+            $apk = Get-ChildItem -Path publish/android -Filter "*.apk" -Recurse |
+                   Select-Object -First 1
+          }
+          echo "APK_PATH=$($apk.FullName)" >> $env:GITHUB_OUTPUT
+          echo "APK_NAME=$($apk.Name)"    >> $env:GITHUB_OUTPUT
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: ${{ steps.find_apk.outputs.APK_PATH }}
+
+  # ── Create GitHub Release ─────────────────────────────────────────────────
+  release:
+    name: Create GitHub Release
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Windows release files
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-release
+          path: artifacts/windows
+
+      - name: Download Android APK
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+          path: artifacts/android
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # Auto-generates release notes from merged PRs / commits since last tag
+          generate_release_notes: true
+          files: |
+            artifacts/windows/*
+            artifacts/android/*.apk

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CalendarApp icon — three calendar pages fanned out to convey multiple
+  calendar modes:
+    • Front (blue)   = Gregorian
+    • Left  (purple) = Julian
+    • Right (amber)  = Biblical / Lunar
+  The sun and crescent moon in the front header reinforce the solar/lunar
+  duality at the heart of the Biblical calendar.
+-->
+<svg width="456" height="456" viewBox="0 0 456 456"
+     xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <!-- ── Gradients ────────────────────────────────────────────────────── -->
+    <linearGradient id="g_blue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#42A5F5"/>
+      <stop offset="100%" stop-color="#1565C0"/>
+    </linearGradient>
+    <linearGradient id="g_purple" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#CE93D8"/>
+      <stop offset="100%" stop-color="#6A1B9A"/>
+    </linearGradient>
+    <linearGradient id="g_amber" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#FFB74D"/>
+      <stop offset="100%" stop-color="#E65100"/>
+    </linearGradient>
+
+    <!-- ── Drop shadow (front calendar only) ────────────────────────────── -->
+    <filter id="shadow" x="-35%" y="-35%" width="170%" height="170%">
+      <feDropShadow dx="0" dy="8" stdDeviation="14"
+                   flood-color="#000000" flood-opacity="0.28"/>
+    </filter>
+
+    <!-- ── Clip the front-calendar header to the calendar's rounded shape ─ -->
+    <!-- Applying this clip to a plain rect (no rx) gives rounded top      -->
+    <!-- corners that match the calendar body, with a straight bottom edge. -->
+    <clipPath id="calClip">
+      <rect x="138" y="90" width="180" height="240" rx="20"/>
+    </clipPath>
+
+    <!-- ── Crescent-moon mask: full circle minus offset circle ──────────── -->
+    <!-- Result is a right-facing crescent (🌙).                            -->
+    <mask id="moonMask">
+      <circle cx="277" cy="122" r="13" fill="white"/>
+      <circle cx="267" cy="118" r="11" fill="black"/>
+    </mask>
+  </defs>
+
+  <!-- ── White background ──────────────────────────────────────────────── -->
+  <rect width="456" height="456" fill="#FFFFFF"/>
+
+  <!-- ── Julian calendar (back-left, purple, –15°) ─────────────────────── -->
+  <!--   Rotation center at the bottom-centre of the calendar stack.       -->
+  <g transform="rotate(-15, 228, 330)">
+    <!-- Body -->
+    <rect x="138" y="90" width="180" height="240" rx="20"
+          fill="url(#g_purple)"/>
+    <!-- Header: rounded top rectangle + plain fill to square the bottom   -->
+    <rect x="138" y="90"  width="180" height="65" rx="20" fill="#6A1B9A"/>
+    <rect x="138" y="120" width="180" height="35"          fill="#6A1B9A"/>
+    <!-- Calendar dot grid (muted — this page is in the background) -->
+    <circle cx="158" cy="175" r="6" fill="white" opacity="0.4"/>
+    <circle cx="193" cy="175" r="6" fill="white" opacity="0.4"/>
+    <circle cx="228" cy="175" r="6" fill="white" opacity="0.4"/>
+    <circle cx="263" cy="175" r="6" fill="white" opacity="0.4"/>
+    <circle cx="298" cy="175" r="6" fill="white" opacity="0.4"/>
+    <circle cx="158" cy="205" r="6" fill="white" opacity="0.4"/>
+    <circle cx="193" cy="205" r="6" fill="white" opacity="0.4"/>
+    <circle cx="228" cy="205" r="6" fill="white" opacity="0.4"/>
+    <circle cx="263" cy="205" r="6" fill="white" opacity="0.4"/>
+    <circle cx="298" cy="205" r="6" fill="white" opacity="0.4"/>
+    <circle cx="158" cy="235" r="6" fill="white" opacity="0.4"/>
+    <circle cx="193" cy="235" r="6" fill="white" opacity="0.4"/>
+    <circle cx="228" cy="235" r="6" fill="white" opacity="0.4"/>
+    <circle cx="263" cy="235" r="6" fill="white" opacity="0.4"/>
+    <circle cx="158" cy="265" r="6" fill="white" opacity="0.4"/>
+    <circle cx="193" cy="265" r="6" fill="white" opacity="0.4"/>
+    <circle cx="228" cy="265" r="6" fill="white" opacity="0.4"/>
+    <circle cx="158" cy="295" r="6" fill="white" opacity="0.4"/>
+    <circle cx="193" cy="295" r="6" fill="white" opacity="0.4"/>
+  </g>
+
+  <!-- ── Biblical calendar (back-right, amber, +15°) ───────────────────── -->
+  <g transform="rotate(15, 228, 330)">
+    <rect x="138" y="90" width="180" height="240" rx="20"
+          fill="url(#g_amber)"/>
+    <rect x="138" y="90"  width="180" height="65" rx="20" fill="#BF360C"/>
+    <rect x="138" y="120" width="180" height="35"          fill="#BF360C"/>
+    <circle cx="158" cy="175" r="6" fill="white" opacity="0.4"/>
+    <circle cx="193" cy="175" r="6" fill="white" opacity="0.4"/>
+    <circle cx="228" cy="175" r="6" fill="white" opacity="0.4"/>
+    <circle cx="263" cy="175" r="6" fill="white" opacity="0.4"/>
+    <circle cx="298" cy="175" r="6" fill="white" opacity="0.4"/>
+    <circle cx="158" cy="205" r="6" fill="white" opacity="0.4"/>
+    <circle cx="193" cy="205" r="6" fill="white" opacity="0.4"/>
+    <circle cx="228" cy="205" r="6" fill="white" opacity="0.4"/>
+    <circle cx="263" cy="205" r="6" fill="white" opacity="0.4"/>
+    <circle cx="298" cy="205" r="6" fill="white" opacity="0.4"/>
+    <circle cx="158" cy="235" r="6" fill="white" opacity="0.4"/>
+    <circle cx="193" cy="235" r="6" fill="white" opacity="0.4"/>
+    <circle cx="228" cy="235" r="6" fill="white" opacity="0.4"/>
+    <circle cx="263" cy="235" r="6" fill="white" opacity="0.4"/>
+    <circle cx="158" cy="265" r="6" fill="white" opacity="0.4"/>
+    <circle cx="193" cy="265" r="6" fill="white" opacity="0.4"/>
+    <circle cx="228" cy="265" r="6" fill="white" opacity="0.4"/>
+    <circle cx="158" cy="295" r="6" fill="white" opacity="0.4"/>
+    <circle cx="193" cy="295" r="6" fill="white" opacity="0.4"/>
+  </g>
+
+  <!-- ── Gregorian calendar (front, blue) ──────────────────────────────── -->
+  <!-- Body with drop shadow -->
+  <rect x="138" y="90" width="180" height="240" rx="20"
+        fill="url(#g_blue)" filter="url(#shadow)"/>
+  <!-- Redraw body without filter so it sits cleanly above the shadow -->
+  <rect x="138" y="90" width="180" height="240" rx="20"
+        fill="url(#g_blue)"/>
+  <!-- Dark header, clipped to the calendar's rounded shape for clean edges -->
+  <rect x="138" y="90" width="180" height="65"
+        fill="#1565C0" clip-path="url(#calClip)"/>
+
+  <!-- Sun symbol (left of header) ☀ -->
+  <circle cx="178" cy="122" r="12" fill="#FFD54F"/>
+  <!-- Cardinal rays -->
+  <line x1="178" y1="104" x2="178" y2="100"
+        stroke="#FFD54F" stroke-width="4" stroke-linecap="round"/>
+  <line x1="178" y1="140" x2="178" y2="144"
+        stroke="#FFD54F" stroke-width="4" stroke-linecap="round"/>
+  <line x1="160" y1="122" x2="156" y2="122"
+        stroke="#FFD54F" stroke-width="4" stroke-linecap="round"/>
+  <line x1="196" y1="122" x2="200" y2="122"
+        stroke="#FFD54F" stroke-width="4" stroke-linecap="round"/>
+  <!-- Diagonal rays -->
+  <line x1="165" y1="109" x2="162" y2="106"
+        stroke="#FFD54F" stroke-width="4" stroke-linecap="round"/>
+  <line x1="191" y1="135" x2="194" y2="138"
+        stroke="#FFD54F" stroke-width="4" stroke-linecap="round"/>
+  <line x1="191" y1="109" x2="194" y2="106"
+        stroke="#FFD54F" stroke-width="4" stroke-linecap="round"/>
+  <line x1="165" y1="135" x2="162" y2="138"
+        stroke="#FFD54F" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Crescent moon (right of header) ☽ -->
+  <circle cx="277" cy="122" r="13" fill="#E3F2FD" mask="url(#moonMask)"/>
+
+  <!-- Calendar dot grid: 5 columns × 5 rows -->
+  <!-- Row 1 -->
+  <circle cx="158" cy="175" r="7" fill="white" opacity="0.9"/>
+  <circle cx="193" cy="175" r="7" fill="white" opacity="0.9"/>
+  <circle cx="228" cy="175" r="7" fill="white" opacity="0.9"/>
+  <circle cx="263" cy="175" r="7" fill="white" opacity="0.9"/>
+  <circle cx="298" cy="175" r="7" fill="white" opacity="0.9"/>
+  <!-- Row 2 — centre dot is "today" (slightly larger, fully opaque) -->
+  <circle cx="158" cy="205" r="7" fill="white" opacity="0.9"/>
+  <circle cx="193" cy="205" r="7" fill="white" opacity="0.9"/>
+  <circle cx="228" cy="205" r="9" fill="white"/>
+  <circle cx="263" cy="205" r="7" fill="white" opacity="0.9"/>
+  <circle cx="298" cy="205" r="7" fill="white" opacity="0.9"/>
+  <!-- Row 3 -->
+  <circle cx="158" cy="235" r="7" fill="white" opacity="0.9"/>
+  <circle cx="193" cy="235" r="7" fill="white" opacity="0.9"/>
+  <circle cx="228" cy="235" r="7" fill="white" opacity="0.9"/>
+  <circle cx="263" cy="235" r="7" fill="white" opacity="0.9"/>
+  <circle cx="298" cy="235" r="7" fill="white" opacity="0.9"/>
+  <!-- Row 4 (4 dots — calendar page tapers) -->
+  <circle cx="158" cy="265" r="7" fill="white" opacity="0.9"/>
+  <circle cx="193" cy="265" r="7" fill="white" opacity="0.9"/>
+  <circle cx="228" cy="265" r="7" fill="white" opacity="0.9"/>
+  <circle cx="263" cy="265" r="7" fill="white" opacity="0.9"/>
+  <!-- Row 5 (3 dots) -->
+  <circle cx="158" cy="295" r="7" fill="white" opacity="0.9"/>
+  <circle cx="193" cy="295" r="7" fill="white" opacity="0.9"/>
+  <circle cx="228" cy="295" r="7" fill="white" opacity="0.9"/>
+
+</svg>
