@@ -461,6 +461,29 @@ public sealed partial class MainPage : Page
             _viewModel?.EditEventCommand.Execute(evt);
     }
 
+    // ── Swipe / manipulation gestures ─────────────────────────────────────
+
+    /// <summary>
+    /// Handles horizontal swipe gestures on the main calendar area.
+    /// Left swipe → next period (next month / week / day).
+    /// Right swipe → previous period.
+    /// Works on Android/iOS touch and Windows touch screens.
+    /// The ManipulationMode="TranslateX" on the root Grid ensures this only
+    /// fires for horizontal gestures; vertical scrolling in child controls
+    /// (month ScrollViewer, etc.) is unaffected.
+    /// </summary>
+    private void OnCalendarSwipeCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+    {
+        const double minSwipeDistance = 60; // dp
+        var dx = e.Cumulative.Translation.X;
+        if (Math.Abs(dx) < minSwipeDistance) return;
+
+        if (dx < 0)
+            _viewModel?.NextCommand.Execute(null);
+        else
+            _viewModel?.PreviousCommand.Execute(null);
+    }
+
     // ── Color helpers ──────────────────────────────────────────────────────
 
     private static SolidColorBrush ParseHexBrush(string hex)

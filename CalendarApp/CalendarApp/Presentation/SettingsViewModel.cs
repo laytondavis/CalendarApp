@@ -714,9 +714,23 @@ public partial class SettingsViewModel : ObservableObject
 
     private async Task GoBackAsync()
     {
-        WeakReferenceMessenger.Default.Send(new SettingsClosedMessage(_googleCalendarSelectionChanged));
+        EnsureSettingsClosedMessageSent();
         await _navigator.GoBack(this);
     }
+
+    /// <summary>
+    /// Sends SettingsClosedMessage if it hasn't been sent yet for this session.
+    /// Called from both GoBackAsync (in-app back button) and SettingsPage.OnNavigatedFrom
+    /// (Android native back button / swipe-back) so MainViewModel always refreshes.
+    /// </summary>
+    public void EnsureSettingsClosedMessageSent()
+    {
+        if (_settingsClosedMessageSent) return;
+        _settingsClosedMessageSent = true;
+        WeakReferenceMessenger.Default.Send(new SettingsClosedMessage(_googleCalendarSelectionChanged));
+    }
+
+    private bool _settingsClosedMessageSent;
 
     private async Task<string?> GetSettingAsync(string key)
     {

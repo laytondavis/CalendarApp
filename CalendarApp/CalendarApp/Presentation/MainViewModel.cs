@@ -1512,7 +1512,7 @@ public partial class MainViewModel : ObservableObject
     }
 
     /// <param name="compact">
-    /// When true returns a short form (e.g. "↓5:45 PM") suitable for narrow month/week cells.
+    /// When true returns a short form (e.g. "↓5:45 PM CDT") suitable for narrow month/week cells.
     /// When false returns the full form (e.g. "Day began: 5:45 PM CDT") for the Day-view header.
     /// </param>
     private string? GetBiblicalDayStartDisplay(DateTime gregorianDate, bool compact = false)
@@ -1522,9 +1522,6 @@ public partial class MainViewModel : ObservableObject
             // GetDayStart → CalculateSunset → already returns local time at the observer's location
             var dayStartLocal = _calendarService.GetDayStart(gregorianDate);
 
-            if (compact)
-                return $"↓{dayStartLocal:h:mm tt}";
-
             TimeZoneInfo tz = TimeZoneInfo.Local;
             if (_calendarService is BiblicalCalendarService biblical)
             {
@@ -1533,7 +1530,10 @@ public partial class MainViewModel : ObservableObject
             }
 
             var tzAbbrev = GetTimeZoneAbbreviation(tz, dayStartLocal);
-            return $"Day began: {dayStartLocal:h:mm tt} {tzAbbrev}";
+
+            return compact
+                ? $"↓{dayStartLocal:h:mm tt} {tzAbbrev}"
+                : $"Day began: {dayStartLocal:h:mm tt} {tzAbbrev}";
         }
         catch { }
         return null;

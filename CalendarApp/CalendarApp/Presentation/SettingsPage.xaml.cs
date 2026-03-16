@@ -10,6 +10,18 @@ public sealed partial class SettingsPage : Page
     }
 
     /// <summary>
+    /// Fires whenever the user leaves Settings — whether via the in-app back button,
+    /// the Android native back button/gesture, or any other navigation.
+    /// Ensures MainViewModel always refreshes after Settings is closed.
+    /// </summary>
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        base.OnNavigatedFrom(e);
+        if (DataContext is SettingsViewModel vm)
+            vm.EnsureSettingsClosedMessageSent();
+    }
+
+    /// <summary>
     /// Fired when the user taps a row in the search-results list.
     /// Adds that location to the saved list and makes it active.
     /// </summary>
