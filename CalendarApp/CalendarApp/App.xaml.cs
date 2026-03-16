@@ -8,10 +8,7 @@ using CalendarApp.Services.Astronomy;
 using CalendarApp.Services.Data;
 using CalendarApp.Services.Google;
 using CalendarApp.Services.Location;
-#if __SKIA__
-using Velopack;
-using Velopack.Sources;
-#endif
+using CalendarApp.Services.Update;
 
 namespace CalendarApp;
 
@@ -160,6 +157,9 @@ public partial class App : Application
                     services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
                     services.AddSingleton<IGoogleCalendarService, GoogleCalendarService>();
                     services.AddSingleton<ISyncService, SyncService>();
+
+                    // App update service (Velopack on desktop; no-op on other platforms)
+                    services.AddSingleton<IUpdateService, UpdateService>();
                 })
                 .UseNavigation(RegisterRoutes)
             );
@@ -348,47 +348,21 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// Checks GitHub Releases for a newer version of the app.
-    /// If found, downloads it silently in the background; the update is
-    /// applied the next time the app is launched (via VelopackApp.Build().Run()
-    /// in Program.cs).  Only active on desktop builds.
+    /// Silently checks for a newer version on startup via the registered IUpdateService.
+    /// Downloads the update in the background; the user can then apply it from the
+    /// Settings → About tab without restarting manually.
     /// </summary>
     private async Task CheckForUpdatesAsync()
     {
-#if __SKIA__
         try
         {
             if (Host == null) return;
-
-            var appConfig = Host.Services
-                .GetRequiredService<Microsoft.Extensions.Options.IOptions<AppConfig>>().Value;
-
-            if (string.IsNullOrWhiteSpace(appConfig.GithubRepo) ||
-                appConfig.GithubRepo.Contains("YOUR_USERNAME"))
-            {
-                Console.WriteLine("[CalendarApp] Update check skipped: GithubRepo not configured.");
-                return;
-            }
-
-            var manager = new UpdateManager(
-                new GithubSource(appConfig.GithubRepo, null, false));
-
-            var newVersion = await manager.CheckForUpdatesAsync();
-            if (newVersion == null)
-            {
-                Console.WriteLine("[CalendarApp] App is up to date.");
-                return;
-            }
-
-            Console.WriteLine($"[CalendarApp] Update available: v{newVersion.TargetFullRelease.Version} — downloading...");
-            await manager.DownloadUpdatesAsync(newVersion);
-            Console.WriteLine("[CalendarApp] Update downloaded. Will apply on next restart.");
+            var updateService = Host.Services.GetRequiredService<IUpdateService>();
+            await updateService.CheckAndDownloadAsync();   // no progress reporting on silent check
         }
         catch (Exception ex)
         {
-            // Update errors are non-fatal; log and continue.
-            Console.WriteLine($"[CalendarApp] Update check failed: {ex.Message}");
+            Console.WriteLine($"[CalendarApp] Background update check failed: {ex.Message}");
         }
-#endif
     }
 }

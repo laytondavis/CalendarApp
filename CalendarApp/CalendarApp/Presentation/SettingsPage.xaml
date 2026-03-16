@@ -473,6 +473,7 @@
                 <ScrollViewer Padding="16">
                     <StackPanel Spacing="16" MaxWidth="600" HorizontalAlignment="Left">
 
+                        <!-- App info card -->
                         <Border Background="{ThemeResource SurfaceBrush}"
                                 CornerRadius="8"
                                 Padding="16">
@@ -487,6 +488,75 @@
                                            Style="{StaticResource BodyTextBlockStyle}"
                                            TextWrapping="Wrap"
                                            Margin="0,8,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Update section — desktop (Velopack) only -->
+                        <Border Background="{ThemeResource SurfaceBrush}"
+                                CornerRadius="8"
+                                Padding="16"
+                                Visibility="{Binding IsUpdateSupported, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Software Updates"
+                                           Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="The app checks for updates automatically on launch. You can also check manually below."
+                                           Style="{StaticResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           TextWrapping="Wrap" />
+
+                                <!-- Status text -->
+                                <TextBlock Text="{Binding UpdateStatusText}"
+                                           Style="{StaticResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource PrimaryBrush}"
+                                           TextWrapping="Wrap"
+                                           Visibility="{Binding UpdateStatusText, Converter={StaticResource NullToVisibilityConverter}}" />
+
+                                <!-- Download progress bar -->
+                                <ProgressBar Value="{Binding UpdateDownloadProgress}"
+                                             Minimum="0" Maximum="100"
+                                             HorizontalAlignment="Stretch"
+                                             Visibility="{Binding IsDownloadingUpdate, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                                <!-- Action buttons -->
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <!-- Check button — visible when no update found yet -->
+                                    <Button Content="Check for Updates"
+                                            Command="{Binding CheckForUpdatesCommand}"
+                                            IsEnabled="{Binding IsCheckingForUpdates, Converter={StaticResource InverseBoolConverter}}"
+                                            Visibility="{Binding IsUpdateAvailable, Converter={StaticResource InverseBoolConverter}}" />
+                                    <!-- Desktop: update downloaded — install immediately -->
+                                    <Button Content="Restart &amp; Install Update"
+                                            Command="{Binding InstallUpdateCommand}"
+                                            Style="{StaticResource FilledTonalButtonStyle}"
+                                            Visibility="{Binding IsUpdateReady, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                    <!-- Android / non-desktop: open GitHub releases page -->
+                                    <Button Content="Download Update"
+                                            Command="{Binding OpenReleasesPageCommand}"
+                                            Style="{StaticResource FilledTonalButtonStyle}"
+                                            Visibility="{Binding IsDownloadLinkAvailable, Converter={StaticResource BoolToVisibilityConverter}}"
+                                            Padding="12,8" />
+                                    <ProgressRing IsActive="{Binding IsCheckingForUpdates}"
+                                                  Width="20" Height="20"
+                                                  VerticalAlignment="Center" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Exit App — Android only (makes it easy to close before installing an update) -->
+                        <Border Background="{ThemeResource SurfaceBrush}"
+                                CornerRadius="8"
+                                Padding="16"
+                                Visibility="{Binding IsAndroid, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Exit Application"
+                                           Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Fully closes the app. Useful before installing an update, since the installer cannot replace a running app."
+                                           Style="{StaticResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           TextWrapping="Wrap" />
+                                <Button Content="Exit App"
+                                        Command="{Binding ExitAppCommand}"
+                                        HorizontalAlignment="Stretch" />
                             </StackPanel>
                         </Border>
 

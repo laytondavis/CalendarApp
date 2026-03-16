@@ -75,14 +75,17 @@ jobs:
         run: dotnet restore CalendarApp/CalendarApp/CalendarApp.csproj
 
       - name: Decode Google credentials
-        shell: bash
+        shell: pwsh
         run: |
-          if [ -z "${{ secrets.GOOGLE_CREDENTIALS_JSON_BASE64 }}" ]; then
-            echo "WARNING: GOOGLE_CREDENTIALS_JSON_BASE64 secret is not set — Google sign-in will be unavailable."
-          else
-            echo "${{ secrets.GOOGLE_CREDENTIALS_JSON_BASE64 }}" | base64 -d > CalendarApp/CalendarApp/credentials.json
-            echo "Google credentials decoded successfully."
-          fi
+          $secret = '${{ secrets.GOOGLE_CREDENTIALS_JSON_BASE64 }}'
+          if ([string]::IsNullOrWhiteSpace($secret)) {
+            Write-Warning "GOOGLE_CREDENTIALS_JSON_BASE64 secret is not set — Google sign-in will be unavailable."
+          } else {
+            [System.IO.File]::WriteAllBytes(
+              "CalendarApp/CalendarApp/credentials.json",
+              [System.Convert]::FromBase64String($secret.Trim()))
+            Write-Host "Google credentials decoded successfully."
+          }
 
       - name: Publish (self-contained)
         run: >
@@ -136,14 +139,17 @@ jobs:
         run: dotnet restore CalendarApp/CalendarApp/CalendarApp.csproj
 
       - name: Decode Google credentials
-        shell: bash
+        shell: pwsh
         run: |
-          if [ -z "${{ secrets.GOOGLE_CREDENTIALS_JSON_BASE64 }}" ]; then
-            echo "WARNING: GOOGLE_CREDENTIALS_JSON_BASE64 secret is not set — Google sign-in will be unavailable."
-          else
-            echo "${{ secrets.GOOGLE_CREDENTIALS_JSON_BASE64 }}" | base64 -d > CalendarApp/CalendarApp/credentials.json
-            echo "Google credentials decoded successfully."
-          fi
+          $secret = '${{ secrets.GOOGLE_CREDENTIALS_JSON_BASE64 }}'
+          if ([string]::IsNullOrWhiteSpace($secret)) {
+            Write-Warning "GOOGLE_CREDENTIALS_JSON_BASE64 secret is not set — Google sign-in will be unavailable."
+          } else {
+            [System.IO.File]::WriteAllBytes(
+              "CalendarApp/CalendarApp/credentials.json",
+              [System.Convert]::FromBase64String($secret.Trim()))
+            Write-Host "Google credentials decoded successfully."
+          }
 
       # Release APK, signed with keystore stored in GitHub Secrets.
       # Set up these four secrets in your repo → Settings → Secrets:
@@ -152,9 +158,11 @@ jobs:
       #   ANDROID_KEY_PASS          key password
       #   ANDROID_STORE_PASS        keystore password
       - name: Decode keystore
-        shell: bash
+        shell: pwsh
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android.keystore
+          [System.IO.File]::WriteAllBytes(
+            "android.keystore",
+            [System.Convert]::FromBase64String('${{ secrets.ANDROID_KEYSTORE_BASE64 }}'.Trim()))
 
       - name: Publish Android
         shell: pwsh

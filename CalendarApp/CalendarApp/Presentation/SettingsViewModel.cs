@@ -22,6 +22,7 @@ public partial class SettingsViewModel : ObservableObject
     private readonly ILocationService _locationService;
     private readonly IAstronomicalService _astronomicalService;
     private readonly CalendarDbContext _dbContext;
+    private readonly IUpdateService _updateService;
     private bool _isLoading = true;
     private bool _googleCalendarSelectionChanged;
 
@@ -130,13 +131,65 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private bool _isGpsBusy;
 
+    // ── App Update ───────────────────────────────────────────────────────────
+
+    [ObservableProperty]
+    private string _updateStatusText = string.Empty;
+
+    [ObservableProperty]
+    private int _updateDownloadProgress;
+
+    /// <summary>Desktop only: update has been downloaded and can be applied immediately.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDownloadLinkAvailable))]
+    private bool _isUpdateReady;
+
+    /// <summary>True on any platform when a newer version has been found.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDownloadLinkAvailable))]
+    private bool _isUpdateAvailable;
+
+    /// <summary>
+    /// True when a newer version was found but NOT yet ready to install directly
+    /// (i.e. Android, where the user must download the APK from the releases page).
+    /// </summary>
+    public bool IsDownloadLinkAvailable => IsUpdateAvailable && !IsUpdateReady;
+
+    [ObservableProperty]
+    private bool _isCheckingForUpdates;
+
+    [ObservableProperty]
+    private bool _isDownloadingUpdate;
+
+    /// <summary>True on desktop (Velopack) and Android (GitHub APK check).</summary>
+    public bool IsUpdateSupported { get; } =
+#if __SKIA__ || __ANDROID__
+        true;
+#else
+        false;
+#endif
+
+    /// <summary>True on Android only — used to show the Exit App button.</summary>
+    public bool IsAndroid { get; } =
+#if __ANDROID__
+        true;
+#else
+        false;
+#endif
+
+    public ICommand CheckForUpdatesCommand { get; }
+    public ICommand InstallUpdateCommand { get; }
+    public ICommand OpenReleasesPageCommand { get; }
+    public ICommand ExitAppCommand { get; }
+
     public SettingsViewModel(
         INavigator navigator,
         ILocationService locationService,
         IAstronomicalService astronomicalService,
         CalendarDbContext dbContext,
         IGoogleAuthService googleAuthService,
-        ISyncService syncService)
+        ISyncService syncService,
+        IUpdateService updateService)
     {
         _navigator = navigator;
         _locationService = locationService;
@@ -144,6 +197,7 @@ public partial class SettingsViewModel : ObservableObject
         _dbContext = dbContext;
         _googleAuthService = googleAuthService;
         _syncService = syncService;
+        _updateService = updateService;
 
         GoBackCommand = new AsyncRelayCommand(GoBackAsync);
         SearchLocationCommand = new AsyncRelayCommand(SearchLocationsAsync);
@@ -154,10 +208,24 @@ public partial class SettingsViewModel : ObservableObject
         GoogleSignOutCommand = new AsyncRelayCommand(GoogleSignOutAsync);
         SyncNowCommand       = new AsyncRelayCommand(SyncNowAsync);
         RefreshGpsCommand    = new AsyncRelayCommand(RefreshGpsAsync);
+        CheckForUpdatesCommand  = new AsyncRelayCommand(CheckForUpdatesAsync);
+        InstallUpdateCommand    = new RelayCommand(InstallUpdate, () => IsUpdateReady);
+        OpenReleasesPageCommand = new AsyncRelayCommand(OpenReleasesPageAsync);
+        ExitAppCommand          = new RelayCommand(ExitApp);
 
         // Reflect current auth state immediately
         IsGoogleSignedIn   = _googleAuthService.IsSignedIn;
         GoogleAccountEmail = _googleAuthService.UserEmail ?? string.Empty;
+
+        // Reflect any update already found/downloaded in the background on startup
+        if (_updateService.IsUpdateAvailable)
+        {
+            IsUpdateAvailable = true;
+            IsUpdateReady     = _updateService.IsUpdateReady;
+            UpdateStatusText  = _updateService.IsUpdateReady
+                ? $"Version {_updateService.NewVersionString} is ready to install."
+                : $"Version {_updateService.NewVersionString} is available.";
+        }
 
         _ = LoadSettingsAsync();
     }
@@ -587,6 +655,73 @@ public partial class SettingsViewModel : ObservableObject
         {
             IsGpsBusy = false;
         }
+    }
+
+    private async Task CheckForUpdatesAsync()
+    {
+        if (IsCheckingForUpdates) return;
+        IsCheckingForUpdates   = true;
+        IsDownloadingUpdate    = false;
+        IsUpdateAvailable      = false;
+        IsUpdateReady          = false;
+        UpdateDownloadProgress = 0;
+        UpdateStatusText       = "Checking for updates…";
+        try
+        {
+            var progress = new Progress<int>(p =>
+            {
+                IsDownloadingUpdate    = true;
+                UpdateDownloadProgress = p;
+                UpdateStatusText       = $"Downloading… {p}%";
+            });
+
+            bool found = await _updateService.CheckAndDownloadAsync(progress);
+            if (found)
+            {
+                IsUpdateAvailable = true;
+                IsUpdateReady     = _updateService.IsUpdateReady;
+                UpdateStatusText  = _updateService.IsUpdateReady
+                    ? $"Version {_updateService.NewVersionString} is ready to install."
+                    : $"Version {_updateService.NewVersionString} is available.";
+            }
+            else
+            {
+                UpdateStatusText = "You are up to date.";
+            }
+        }
+        catch (Exception ex)
+        {
+            UpdateStatusText = $"Update check failed: {ex.Message}";
+        }
+        finally
+        {
+            IsCheckingForUpdates = false;
+            IsDownloadingUpdate  = false;
+            (InstallUpdateCommand as RelayCommand)?.NotifyCanExecuteChanged();
+        }
+    }
+
+    private void InstallUpdate() => _updateService.ApplyAndRestart();
+
+    private async Task OpenReleasesPageAsync()
+    {
+        var url = _updateService.ReleasesPageUrl;
+        if (string.IsNullOrEmpty(url)) return;
+        try
+        {
+            await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[CalendarApp] Could not open releases page: {ex.Message}");
+        }
+    }
+
+    private static void ExitApp()
+    {
+#if __ANDROID__
+        Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
+#endif
     }
 
     private async Task SearchLocationsAsync()
