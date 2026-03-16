@@ -1,19 +1,61 @@
 name: Build and Release
 
-# Trigger: push a version tag like  git tag v1.2.3 && git push --tags
+# Triggers:
+#   1. Any tag starting with 'v' (v1.0.0, v1.0.0-beta, v2.1, etc.)
+#   2. Manual run from GitHub → Actions → "Run workflow"
 on:
   push:
     tags:
-      - 'v[0-9]*'
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. v1.2.3)'
+        required: true
+        default: 'v1.0.0'
 
 # Opt into Node.js 24 for all actions (replaces deprecated Node 20 runtime)
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  # ── Resolve version once; share it with every other job ──────────────────
+  prepare:
+    name: Resolve version
+    runs-on: ubuntu-latest
+    outputs:
+      semver: ${{ steps.ver.outputs.semver }}   # e.g. 1.2.3  (no 'v')
+      tag:    ${{ steps.ver.outputs.tag    }}   # e.g. v1.2.3 (with 'v')
+    steps:
+      - name: Compute semver and tag
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            RAW="${{ inputs.version }}"
+          else
+            RAW="${{ github.ref_name }}"
+          fi
+          SEMVER="${RAW#v}"          # strip leading 'v'
+          echo "semver=$SEMVER"     >> $GITHUB_OUTPUT
+          echo "tag=v$SEMVER"       >> $GITHUB_OUTPUT
+
+      # When triggered manually the tag may not exist yet — create and push it
+      - name: Checkout (manual dispatch only)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v4
+
+      - name: Create and push tag (manual dispatch only)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.ver.outputs.tag }}" || echo "Tag already exists — continuing"
+          git push origin "${{ steps.ver.outputs.tag }}" || echo "Tag already pushed — continuing"
+
   # ── Windows installer (Velopack) ──────────────────────────────────────────
   windows:
     name: Windows — Velopack installer
+    needs: prepare
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,17 +82,15 @@ jobs:
           --self-contained true
           -o publish/desktop
 
-      # Strip the leading 'v' from the tag (v1.2.3 → 1.2.3) for Velopack
       - name: Pack with Velopack
         shell: pwsh
         run: |
-          $version = "${{ github.ref_name }}".TrimStart('v')
           vpk pack `
-            --packId    CalendarApp `
-            --packVersion $version `
-            --packDir   publish/desktop `
-            --outputDir releases/windows `
-            --mainExe   CalendarApp.exe
+            --packId      CalendarApp `
+            --packVersion ${{ needs.prepare.outputs.semver }} `
+            --packDir     publish/desktop `
+            --outputDir   releases/windows `
+            --mainExe     CalendarApp.exe
 
       - name: Upload Windows release files
         uses: actions/upload-artifact@v4
@@ -61,6 +101,7 @@ jobs:
   # ── Android APK ──────────────────────────────────────────────────────────
   android:
     name: Android — APK
+    needs: prepare
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -116,7 +157,6 @@ jobs:
                    Select-Object -First 1
           }
           echo "APK_PATH=$($apk.FullName)" >> $env:GITHUB_OUTPUT
-          echo "APK_NAME=$($apk.Name)"    >> $env:GITHUB_OUTPUT
 
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
@@ -127,7 +167,7 @@ jobs:
   # ── Create GitHub Release ─────────────────────────────────────────────────
   release:
     name: Create GitHub Release
-    needs: [windows, android]
+    needs: [prepare, windows, android]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -147,7 +187,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          # Auto-generates release notes from merged PRs / commits since last tag
+          tag_name: ${{ needs.prepare.outputs.tag }}
           generate_release_notes: true
           files: |
             artifacts/windows/*
