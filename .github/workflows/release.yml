@@ -86,6 +86,8 @@ jobs:
           -f net9.0-desktop
           --self-contained true
           -o publish/desktop
+          -p:Version=${{ needs.prepare.outputs.semver }}
+          -p:ApplicationDisplayVersion=${{ needs.prepare.outputs.semver }}
 
       - name: Pack with Velopack
         shell: pwsh
@@ -151,6 +153,8 @@ jobs:
           -c Release
           -f net9.0-android
           -o publish/android
+          -p:Version=${{ needs.prepare.outputs.semver }}
+          -p:ApplicationDisplayVersion=${{ needs.prepare.outputs.semver }}
           -p:AndroidSigningKeyStore="$(Resolve-Path android.keystore)"
           -p:AndroidSigningKeyAlias="${{ secrets.ANDROID_KEY_ALIAS }}"
           -p:AndroidSigningKeyPass="${{ secrets.ANDROID_KEY_PASS }}"

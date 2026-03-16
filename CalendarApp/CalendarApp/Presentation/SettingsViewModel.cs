@@ -10,6 +10,14 @@ namespace CalendarApp.Presentation;
 
 public partial class SettingsViewModel : ObservableObject
 {
+    /// <summary>
+    /// Version string derived from the assembly version, which is stamped at build time
+    /// by passing -p:Version=X.Y.Z to dotnet publish in the release workflow.
+    /// Falls back to "1.0.0" for local dev builds where the version is not set.
+    /// </summary>
+    public string AppVersion { get; } =
+        "v" + (System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "1.0.0");
+
     private readonly INavigator _navigator;
     private readonly ILocationService _locationService;
     private readonly IAstronomicalService _astronomicalService;

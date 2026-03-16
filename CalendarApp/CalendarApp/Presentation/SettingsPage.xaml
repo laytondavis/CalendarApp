@@ -458,7 +458,7 @@
                                 <TextBlock Text="Calendar App"
                                            Style="{StaticResource BodyStrongTextBlockStyle}"
                                            FontSize="16" />
-                                <TextBlock Text="Version 1.0.0"
+                                <TextBlock Text="{Binding AppVersion}"
                                            Style="{StaticResource CaptionTextBlockStyle}"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 <TextBlock Text="A cross-platform calendar supporting Gregorian, Julian, and Biblical calendar systems with Google Calendar sync."
