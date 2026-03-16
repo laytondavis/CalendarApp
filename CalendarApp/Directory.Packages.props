@@ -20,5 +20,8 @@
     <!-- Google Calendar API -->
     <PackageVersion Include="Google.Apis.Calendar.v3" Version="1.69.0.3667" />
     <PackageVersion Include="Google.Apis.Auth" Version="1.69.0" />
+
+    <!-- Velopack: auto-update for desktop builds -->
+    <PackageVersion Include="Velopack" Version="0.0.1298" />
   </ItemGroup>
 </Project>
