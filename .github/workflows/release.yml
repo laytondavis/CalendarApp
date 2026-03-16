@@ -82,7 +82,7 @@ jobs:
           if ([string]::IsNullOrWhiteSpace($env:CREDS_B64)) {
             Write-Warning "GOOGLE_CREDENTIALS_JSON_BASE64 secret is not set — Google sign-in will be unavailable."
           } else {
-            $bytes = [System.Convert]::FromBase64String(($env:CREDS_B64 -replace '\s+', ''))
+            $bytes = [System.Convert]::FromBase64String(($env:CREDS_B64 -replace '[^A-Za-z0-9+/=]', ''))
             [System.IO.File]::WriteAllBytes("CalendarApp/CalendarApp/credentials.json", $bytes)
             Write-Host "Google credentials decoded successfully."
           }
@@ -146,7 +146,7 @@ jobs:
           if ([string]::IsNullOrWhiteSpace($env:CREDS_B64)) {
             Write-Warning "GOOGLE_CREDENTIALS_JSON_BASE64 secret is not set — Google sign-in will be unavailable."
           } else {
-            $bytes = [System.Convert]::FromBase64String(($env:CREDS_B64 -replace '\s+', ''))
+            $bytes = [System.Convert]::FromBase64String(($env:CREDS_B64 -replace '[^A-Za-z0-9+/=]', ''))
             [System.IO.File]::WriteAllBytes("CalendarApp/CalendarApp/credentials.json", $bytes)
             Write-Host "Google credentials decoded successfully."
           }
@@ -162,7 +162,7 @@ jobs:
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          $bytes = [System.Convert]::FromBase64String(($env:KEYSTORE_B64 -replace '\s+', ''))
+          $bytes = [System.Convert]::FromBase64String(($env:KEYSTORE_B64 -replace '[^A-Za-z0-9+/=]', ''))
           [System.IO.File]::WriteAllBytes("android.keystore", $bytes)
 
       - name: Publish Android
