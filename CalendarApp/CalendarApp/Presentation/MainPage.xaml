@@ -8,8 +8,8 @@
       NavigationCacheMode="Required"
       Background="{ThemeResource BackgroundBrush}">
 
-    <Grid utu:SafeArea.Insets="VisibleBounds"
-          ManipulationMode="TranslateX TranslateInertia"
+    <Grid x:Name="RootGrid"
+          utu:SafeArea.Insets="VisibleBounds"
           ManipulationCompleted="OnCalendarSwipeCompleted">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
