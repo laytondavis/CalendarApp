@@ -26,6 +26,9 @@ jobs:
       - name: Install Velopack CLI
         run: dotnet tool install -g vpk
 
+      - name: Restore workloads
+        run: dotnet workload restore CalendarApp/CalendarApp/CalendarApp.csproj
+
       - name: Restore dependencies
         run: dotnet restore CalendarApp/CalendarApp/CalendarApp.csproj
 
@@ -73,8 +76,8 @@ jobs:
           distribution: 'microsoft'
           java-version: '17'
 
-      - name: Install Android workload
-        run: dotnet workload install android
+      - name: Restore workloads
+        run: dotnet workload restore CalendarApp/CalendarApp/CalendarApp.csproj
 
       - name: Restore dependencies
         run: dotnet restore CalendarApp/CalendarApp/CalendarApp.csproj
