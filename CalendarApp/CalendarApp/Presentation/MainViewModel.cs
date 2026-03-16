@@ -841,7 +841,7 @@ public partial class MainViewModel : ObservableObject
                 LunarConjunctionDisplay = GetLunarConjunctionDisplay(date.GregorianEquivalent),
                 CrescentIlluminationDisplay = GetCrescentIlluminationDisplay(date.GregorianEquivalent),
                 DayStartDisplay = CurrentCalendarMode == CalendarMode.Biblical
-                    ? GetBiblicalDayStartDisplay(date.GregorianEquivalent) : null,
+                    ? GetBiblicalDayStartDisplay(date.GregorianEquivalent, compact: true) : null,
                 AstronomicalEventDisplay = GetAstronomicalEventDisplay(date.GregorianEquivalent),
                 HolidayDisplay = holidayName,
                 Events = new ObservableCollection<CalendarEventViewModel>(dayEvents)
@@ -924,7 +924,7 @@ public partial class MainViewModel : ObservableObject
                 LunarConjunctionDisplay = GetLunarConjunctionDisplay(date.GregorianEquivalent),
                 CrescentIlluminationDisplay = GetCrescentIlluminationDisplay(date.GregorianEquivalent),
                 DayStartDisplay = CurrentCalendarMode == CalendarMode.Biblical
-                    ? GetBiblicalDayStartDisplay(date.GregorianEquivalent) : null,
+                    ? GetBiblicalDayStartDisplay(date.GregorianEquivalent, compact: true) : null,
                 AstronomicalEventDisplay = GetAstronomicalEventDisplay(date.GregorianEquivalent),
                 HolidayDisplay = weekHolidayName,
                 AllDayEvents = new ObservableCollection<CalendarEventViewModel>(allDayEvents),
@@ -1155,7 +1155,7 @@ public partial class MainViewModel : ObservableObject
                 LunarConjunctionDisplay = GetLunarConjunctionDisplay(DateTime.Today),
                 CrescentIlluminationDisplay = GetCrescentIlluminationDisplay(DateTime.Today),
                 DayStartDisplay = CurrentCalendarMode == CalendarMode.Biblical
-                    ? GetBiblicalDayStartDisplay(DateTime.Today) : null,
+                    ? GetBiblicalDayStartDisplay(DateTime.Today, compact: true) : null,
                 AstronomicalEventDisplay = GetAstronomicalEventDisplay(DateTime.Today),
                 Events = new ObservableCollection<CalendarEventViewModel>()
             });
@@ -1511,12 +1511,19 @@ public partial class MainViewModel : ObservableObject
         return null;
     }
 
-    private string? GetBiblicalDayStartDisplay(DateTime gregorianDate)
+    /// <param name="compact">
+    /// When true returns a short form (e.g. "↓5:45 PM") suitable for narrow month/week cells.
+    /// When false returns the full form (e.g. "Day began: 5:45 PM CDT") for the Day-view header.
+    /// </param>
+    private string? GetBiblicalDayStartDisplay(DateTime gregorianDate, bool compact = false)
     {
         try
         {
             // GetDayStart → CalculateSunset → already returns local time at the observer's location
             var dayStartLocal = _calendarService.GetDayStart(gregorianDate);
+
+            if (compact)
+                return $"↓{dayStartLocal:h:mm tt}";
 
             TimeZoneInfo tz = TimeZoneInfo.Local;
             if (_calendarService is BiblicalCalendarService biblical)

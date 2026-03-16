@@ -68,6 +68,12 @@ public interface ILocationService
     /// Searches for locations by name (geocoding).
     /// </summary>
     Task<IEnumerable<LocationSuggestion>> SearchLocationsAsync(string query);
+
+    /// <summary>
+    /// Gets the current GPS fix directly from device hardware.
+    /// Returns null if GPS is unavailable, denied, or the platform doesn't support it.
+    /// </summary>
+    Task<LocationInfo?> GetGpsLocationAsync();
 }
 
 /// <summary>

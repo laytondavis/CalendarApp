@@ -170,6 +170,28 @@
                             </ComboBox>
                         </StackPanel>
 
+                        <!-- GPS Status -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="GPS Location" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                            <Border Background="{ThemeResource SurfaceBrush}"
+                                    CornerRadius="6"
+                                    Padding="12,10">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="{Binding GpsLocationDisplay}"
+                                               Style="{StaticResource CaptionTextBlockStyle}"
+                                               TextWrapping="Wrap" />
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Button Content="Refresh GPS"
+                                                Command="{Binding RefreshGpsCommand}"
+                                                IsEnabled="{Binding IsGpsBusy, Converter={StaticResource InverseBoolConverter}}" />
+                                        <ProgressRing IsActive="{Binding IsGpsBusy}"
+                                                      Width="20" Height="20"
+                                                      VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
                         <!-- Saved Locations List -->
                         <StackPanel Spacing="4">
                             <TextBlock Text="Saved Locations" Style="{StaticResource BodyStrongTextBlockStyle}" />

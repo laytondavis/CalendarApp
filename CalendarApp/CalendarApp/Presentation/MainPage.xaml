@@ -242,12 +242,14 @@
                                                Style="{StaticResource CaptionTextBlockStyle}"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                Visibility="{x:Bind HasCrossReference, Converter={StaticResource BoolToVisibilityConverter}}"
+                                               TextTrimming="CharacterEllipsis"
                                                FontSize="9" />
                                     <TextBlock Text="{x:Bind DayStartDisplay}"
                                                HorizontalAlignment="Center"
                                                Style="{StaticResource CaptionTextBlockStyle}"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                Visibility="{x:Bind HasDayStartDisplay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                               TextTrimming="CharacterEllipsis"
                                                FontSize="9" />
                                     <TextBlock Text="{x:Bind LunarConjunctionDisplay}"
                                                HorizontalAlignment="Center"

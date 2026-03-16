@@ -77,7 +77,12 @@ jobs:
       - name: Decode Google credentials
         shell: bash
         run: |
-          echo "${{ secrets.GOOGLE_CREDENTIALS_JSON_BASE64 }}" | base64 -d > CalendarApp/CalendarApp/credentials.json
+          if [ -z "${{ secrets.GOOGLE_CREDENTIALS_JSON_BASE64 }}" ]; then
+            echo "WARNING: GOOGLE_CREDENTIALS_JSON_BASE64 secret is not set — Google sign-in will be unavailable."
+          else
+            echo "${{ secrets.GOOGLE_CREDENTIALS_JSON_BASE64 }}" | base64 -d > CalendarApp/CalendarApp/credentials.json
+            echo "Google credentials decoded successfully."
+          fi
 
       - name: Publish (self-contained)
         run: >
@@ -133,7 +138,12 @@ jobs:
       - name: Decode Google credentials
         shell: bash
         run: |
-          echo "${{ secrets.GOOGLE_CREDENTIALS_JSON_BASE64 }}" | base64 -d > CalendarApp/CalendarApp/credentials.json
+          if [ -z "${{ secrets.GOOGLE_CREDENTIALS_JSON_BASE64 }}" ]; then
+            echo "WARNING: GOOGLE_CREDENTIALS_JSON_BASE64 secret is not set — Google sign-in will be unavailable."
+          else
+            echo "${{ secrets.GOOGLE_CREDENTIALS_JSON_BASE64 }}" | base64 -d > CalendarApp/CalendarApp/credentials.json
+            echo "Google credentials decoded successfully."
+          fi
 
       # Release APK, signed with keystore stored in GitHub Secrets.
       # Set up these four secrets in your repo → Settings → Secrets:

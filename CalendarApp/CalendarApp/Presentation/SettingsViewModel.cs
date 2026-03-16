@@ -122,6 +122,13 @@ public partial class SettingsViewModel : ObservableObject
     public ICommand GoogleSignInCommand { get; }
     public ICommand GoogleSignOutCommand { get; }
     public ICommand SyncNowCommand { get; }
+    public ICommand RefreshGpsCommand { get; }
+
+    [ObservableProperty]
+    private string _gpsLocationDisplay = "GPS not loaded yet.";
+
+    [ObservableProperty]
+    private bool _isGpsBusy;
 
     public SettingsViewModel(
         INavigator navigator,
@@ -146,6 +153,7 @@ public partial class SettingsViewModel : ObservableObject
         GoogleSignInCommand  = new AsyncRelayCommand(GoogleSignInAsync);
         GoogleSignOutCommand = new AsyncRelayCommand(GoogleSignOutAsync);
         SyncNowCommand       = new AsyncRelayCommand(SyncNowAsync);
+        RefreshGpsCommand    = new AsyncRelayCommand(RefreshGpsAsync);
 
         // Reflect current auth state immediately
         IsGoogleSignedIn   = _googleAuthService.IsSignedIn;
@@ -228,6 +236,7 @@ public partial class SettingsViewModel : ObservableObject
             ShowBiblicalEvents    = showBiblicalEventsSetting   == "true";
 
             await LoadSavedLocationsAsync();
+            _ = RefreshGpsAsync();   // non-blocking; populates GpsLocationDisplay
             await LoadGoogleCalendarsAsync();
         }
         catch (Exception ex)
@@ -556,6 +565,27 @@ public partial class SettingsViewModel : ObservableObject
         catch (Exception ex)
         {
             Console.WriteLine($"[CalendarApp] Error saving calendar user color: {ex}");
+        }
+    }
+
+    private async Task RefreshGpsAsync()
+    {
+        IsGpsBusy = true;
+        GpsLocationDisplay = "Requesting GPS…";
+        try
+        {
+            var location = await _locationService.GetGpsLocationAsync();
+            GpsLocationDisplay = location != null
+                ? $"Lat: {location.Latitude:F5}   Lon: {location.Longitude:F5}\nTimezone: {location.TimeZoneId}"
+                : "GPS unavailable — check that location permission is granted.";
+        }
+        catch (Exception ex)
+        {
+            GpsLocationDisplay = $"GPS error: {ex.Message}";
+        }
+        finally
+        {
+            IsGpsBusy = false;
         }
     }
 

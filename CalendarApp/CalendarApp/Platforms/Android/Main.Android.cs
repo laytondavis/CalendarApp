@@ -24,6 +24,10 @@ public class Application : Microsoft.UI.Xaml.NativeApplication
     public Application(IntPtr javaReference, JniHandleOwnership transfer)
         : base(() => new App(), javaReference, transfer)
     {
+        // Explicitly initialize SQLitePCLRaw before any SQLite connection is created.
+        // Without this call, the Release build linker strips the native provider and
+        // every SQLite operation silently fails (no database = no saved settings).
+        SQLitePCL.Batteries_V2.Init();
     }
 
 }

@@ -2,6 +2,7 @@ using CalendarApp.Data;
 using CalendarApp.Data.Entities;
 using CalendarApp.Models;
 using CalendarApp.Services.Interfaces;
+using Windows.Devices.Geolocation;
 
 namespace CalendarApp.Services.Location;
 
@@ -21,6 +22,8 @@ public class LocationService : ILocationService
     {
         _context = context;
         _httpClient = httpClient;
+        // Set once; ParseAdd throws if the header is added a second time
+        _httpClient.DefaultRequestHeaders.UserAgent.TryParseAdd("CalendarApp/1.0");
     }
 
     public async Task<LocationInfo?> GetCurrentLocationAsync()
@@ -71,9 +74,15 @@ public class LocationService : ILocationService
 
     public async Task<bool> RequestPermissionAsync()
     {
-        // Platform-specific permission request would go here
-        // For now, return true
-        return await Task.FromResult(true);
+        try
+        {
+            var status = await Geolocator.RequestAccessAsync();
+            return status == GeolocationAccessStatus.Allowed;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public async Task SaveDefaultLocationAsync(LocationInfo location, string name, string? city = null, string? zipCode = null, string? county = null, string? state = null)
@@ -200,7 +209,6 @@ public class LocationService : ILocationService
             var url = $"https://nominatim.openstreetmap.org/search?" +
                       $"q={Uri.EscapeDataString(query)}&format=json&limit=5&addressdetails=1";
 
-            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("CalendarApp/1.0");
             var response = await _httpClient.GetStringAsync(url);
             var json = System.Text.Json.JsonDocument.Parse(response);
 
@@ -270,12 +278,38 @@ public class LocationService : ILocationService
         return null;
     }
 
-    private async Task<LocationInfo?> GetGpsLocationAsync()
+    public async Task<LocationInfo?> GetGpsLocationAsync()
     {
-        // Platform-specific GPS implementation would go here
-        // This is a placeholder that returns null (GPS not available)
-        await Task.Delay(100); // Simulate async operation
-        return null;
+        try
+        {
+            var accessStatus = await Geolocator.RequestAccessAsync();
+            if (accessStatus != GeolocationAccessStatus.Allowed)
+            {
+                Console.WriteLine("[CalendarApp] GPS: access not granted.");
+                return null;
+            }
+
+            var geolocator = new Geolocator { DesiredAccuracy = PositionAccuracy.Default };
+            var position = await geolocator.GetGeopositionAsync(
+                maximumAge: TimeSpan.FromMinutes(10),
+                timeout: TimeSpan.FromSeconds(20));
+
+            var lat = position.Coordinate.Point.Position.Latitude;
+            var lon = position.Coordinate.Point.Position.Longitude;
+            var alt = position.Coordinate.Point.Position.Altitude;
+
+            // Use the device's local timezone for GPS fixes — most accurate
+            // for the current location and avoids network call to timeapi.io.
+            var tzId = TimeZoneInfo.Local.Id;
+
+            Console.WriteLine($"[CalendarApp] GPS fix: {lat:F5}, {lon:F5}, tz={tzId}");
+            return new LocationInfo(lat, lon, alt, tzId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[CalendarApp] GPS error: {ex.Message}");
+            return null;
+        }
     }
 
     private async Task SaveGpsLocationAsync(LocationInfo location)

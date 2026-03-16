@@ -14,7 +14,7 @@ public class CalendarDbContext
     public CalendarDbContext()
     {
         var dbPath = GetDatabasePath();
-        _connection = new SQLiteAsyncConnection(dbPath, SQLiteOpenFlags.Create | SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.SharedCache);
+        _connection = new SQLiteAsyncConnection(dbPath, SQLiteOpenFlags.Create | SQLiteOpenFlags.ReadWrite);
     }
 
     /// <summary>

@@ -254,7 +254,9 @@ public partial class App : Application
                 "CalendarApp");
             var destPath = Path.Combine(destFolder, "credentials.json");
 
-            if (File.Exists(destPath)) return;
+            // Skip if a valid-looking file already exists (> 50 bytes = real JSON).
+            // Replace an empty or zero-byte file left by a failed prior install.
+            if (File.Exists(destPath) && new FileInfo(destPath).Length > 50) return;
 
             Directory.CreateDirectory(destFolder);
 
