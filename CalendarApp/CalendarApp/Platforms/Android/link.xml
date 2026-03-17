@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Preserve Google.Apis assemblies from the Android linker/trimmer.
+  Without this, the linker strips types used via reflection (HttpClientFactory,
+  token-store discovery, etc.) and Google sign-in fails at runtime with a
+  MissingMethodException or similar error.
+-->
+<linker>
+  <assembly fullname="Google.Apis"             preserve="all" />
+  <assembly fullname="Google.Apis.Auth"         preserve="all" />
+  <assembly fullname="Google.Apis.Core"         preserve="all" />
+  <assembly fullname="Google.Apis.Calendar.v3"  preserve="all" />
+  <assembly fullname="Newtonsoft.Json"           preserve="all" />
+</linker>
