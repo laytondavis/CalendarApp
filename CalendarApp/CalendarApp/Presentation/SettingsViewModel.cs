@@ -869,6 +869,18 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Called by SettingsPage.OnNavigatedTo so that settings are always freshly loaded
+    /// from the database whenever the page is shown, and the closed-message flag is
+    /// reset so MainViewModel gets notified on the NEXT exit too.
+    /// </summary>
+    public void OnNavigatedToSettings()
+    {
+        _settingsClosedMessageSent = false;
+        _googleCalendarSelectionChanged = false;
+        _ = LoadSettingsAsync();
+    }
+
+    /// <summary>
     /// Sends SettingsClosedMessage if it hasn't been sent yet for this session.
     /// Called from both GoBackAsync (in-app back button) and SettingsPage.OnNavigatedFrom
     /// (Android native back button / swipe-back) so MainViewModel always refreshes.
