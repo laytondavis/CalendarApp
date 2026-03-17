@@ -269,12 +269,12 @@ public partial class App : Application
             var srcPath = Path.Combine(AppContext.BaseDirectory, "credentials.json");
             if (File.Exists(srcPath))
             {
-                File.Copy(srcPath, destPath, overwrite: false);
+                File.Copy(srcPath, destPath, overwrite: true);
                 Console.WriteLine("[CalendarApp] credentials.json installed from app directory.");
             }
             else
             {
-                Console.WriteLine("[CalendarApp] credentials.json not bundled — Google sign-in unavailable.");
+                Console.WriteLine($"[CalendarApp] credentials.json not found at '{srcPath}' — Google sign-in unavailable.");
             }
             await Task.CompletedTask;
 #else
