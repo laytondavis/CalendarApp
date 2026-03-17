@@ -241,21 +241,46 @@ public class GoogleAuthService : IGoogleAuthService
 
     /// <summary>
     /// Returns the platform-appropriate OAuth code receiver.
-    /// On Android we use an in-app WebView (AndroidWebViewCodeReceiver) so the
-    /// redirect to http://127.0.0.1 is intercepted before Chrome's Private
-    /// Network Access policy can block it. No Google Cloud Console changes needed
-    /// — Desktop app clients allow any localhost port automatically.
-    /// On all other platforms null lets GoogleWebAuthorizationBroker use its
-    /// default LoopbackCodeReceiver (standard browser + localhost listener).
+    ///
+    /// Android — two paths depending on which credentials file is present:
+    ///   A) credentials_android.json exists (Web application OAuth client):
+    ///      AndroidCodeReceiver opens Chrome; Android routes the custom-scheme
+    ///      redirect back to OAuthRedirectActivity. Cleanest UX.
+    ///   B) Only credentials.json (Desktop OAuth client):
+    ///      AndroidWebViewCodeReceiver shows an in-app WebView and intercepts
+    ///      the http://127.0.0.1 redirect before Chrome's Private Network
+    ///      Access policy can block it. Fallback until mobile creds exist.
+    ///
+    /// Other platforms — null uses GoogleWebAuthorizationBroker's default
+    /// LoopbackCodeReceiver (standard browser + localhost HTTP listener).
     /// </summary>
     private static ICodeReceiver? GetCodeReceiver()
     {
 #if __ANDROID__
-        return new AndroidWebViewCodeReceiver();
+        return HasAndroidCredentials()
+            ? new AndroidCodeReceiver()
+            : new AndroidWebViewCodeReceiver();
 #else
         return null;
 #endif
     }
+
+#if __ANDROID__
+    /// <summary>
+    /// True when credentials_android.json is bundled in the APK assets,
+    /// indicating that a Web application OAuth client is available for Android.
+    /// </summary>
+    private static bool HasAndroidCredentials()
+    {
+        try
+        {
+            using var s = Android.App.Application.Context.Assets!
+                              .Open("credentials_android.json");
+            return s.Length > 50; // real JSON, not a stub
+        }
+        catch { return false; }
+    }
+#endif
 
     private static CalendarService CreateCalendarService(UserCredential credential)
     {
@@ -312,10 +337,24 @@ public class GoogleAuthService : IGoogleAuthService
 #endif
 
 #if __ANDROID__
-        // 4. Android fallback: read directly from APK assets in case the file-copy step failed.
+        // 4a. Android: try mobile-specific credentials first (Web application client).
+        //     When present, these are used with the custom-scheme redirect flow.
+        try
+        {
+            using var stream = Android.App.Application.Context.Assets!
+                                   .Open("credentials_android.json");
+            var s = GoogleClientSecrets.FromStream(stream).Secrets;
+            Console.WriteLine("[CalendarApp] GetClientSecrets: loaded credentials_android.json");
+            return s;
+        }
+        catch { /* not present yet — fall through to desktop credentials */ }
+
+        // 4b. Android fallback: read desktop credentials from APK assets.
+        //     Used with the WebView receiver until mobile credentials are added.
         try
         {
             using var stream = Android.App.Application.Context.Assets!.Open("credentials.json");
+            Console.WriteLine("[CalendarApp] GetClientSecrets: loaded credentials.json from assets");
             return GoogleClientSecrets.FromStream(stream).Secrets;
         }
         catch (Exception ex)

@@ -68,6 +68,13 @@
     <AndroidAsset Include="credentials.json" />
   </ItemGroup>
 
+  <!-- Mobile-specific Web application OAuth credentials (optional).
+       When present, the app uses the custom-scheme redirect (Chrome-based).
+       When absent, it falls back to the WebView flow with credentials.json. -->
+  <ItemGroup Condition="$(TargetFramework.Contains('android')) And Exists('credentials_android.json')">
+    <AndroidAsset Include="credentials_android.json" />
+  </ItemGroup>
+
   <!-- Preserve Google.Apis types from the Android linker so OAuth sign-in works. -->
   <ItemGroup Condition="$(TargetFramework.Contains('android'))">
     <LinkDescription Include="Platforms\Android\link.xml" />
