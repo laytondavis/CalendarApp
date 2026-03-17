@@ -4,6 +4,9 @@ using Google.Apis.Calendar.v3;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using Microsoft.Extensions.Logging;
+#if __ANDROID__
+using CalendarApp.Platforms.Android;
+#endif
 
 namespace CalendarApp.Services.Google;
 
@@ -59,7 +62,8 @@ public class GoogleAuthService : IGoogleAuthService
                 FullScopes,
                 "user",
                 CancellationToken.None,
-                tokenStore);
+                tokenStore,
+                GetCodeReceiver());
 
             if (_credential.Token.IsStale)
             {
@@ -106,7 +110,8 @@ public class GoogleAuthService : IGoogleAuthService
                 FullScopes,
                 "user",
                 CancellationToken.None,
-                tokenStore);
+                tokenStore,
+                GetCodeReceiver());
 
             if (_credential.Token.IsStale)
             {
@@ -209,7 +214,8 @@ public class GoogleAuthService : IGoogleAuthService
                 ReadOnlyScopes,
                 alias,
                 CancellationToken.None,
-                tokenStore);
+                tokenStore,
+                GetCodeReceiver());
 
             if (credential.Token.IsStale)
                 await credential.RefreshTokenAsync(CancellationToken.None);
@@ -232,6 +238,22 @@ public class GoogleAuthService : IGoogleAuthService
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Returns the platform-appropriate OAuth code receiver.
+    /// On Android, Chrome blocks redirects to http://localhost (Private Network
+    /// Access policy), so we use a custom URI scheme via AndroidCodeReceiver.
+    /// On all other platforms null lets GoogleWebAuthorizationBroker use its
+    /// default LoopbackCodeReceiver which works fine.
+    /// </summary>
+    private static ICodeReceiver? GetCodeReceiver()
+    {
+#if __ANDROID__
+        return new AndroidCodeReceiver();
+#else
+        return null;
+#endif
+    }
 
     private static CalendarService CreateCalendarService(UserCredential credential)
     {

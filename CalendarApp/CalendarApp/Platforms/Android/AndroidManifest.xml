@@ -3,5 +3,26 @@
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-  <application android:allowBackup="true" android:supportsRtl="true"></application>
+  <application android:allowBackup="true" android:supportsRtl="true">
+    <!--
+      Trampoline activity that receives the Google OAuth custom-scheme redirect.
+      Chrome blocks http://localhost redirects from HTTPS pages (Private Network
+      Access policy), so we use a custom URI scheme instead:
+        com.companyname.calendarapp://oauth2redirect
+      This activity is also declared in code via [IntentFilter]; the entry here
+      is a belt-and-suspenders ensure the manifest merge always has it.
+    -->
+    <activity
+      android:name="com.companyname.calendarapp.OAuthRedirectActivity"
+      android:exported="true"
+      android:noHistory="true"
+      android:launchMode="singleTop">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="com.companyname.calendarapp" android:host="oauth2redirect" />
+      </intent-filter>
+    </activity>
+  </application>
 </manifest>
