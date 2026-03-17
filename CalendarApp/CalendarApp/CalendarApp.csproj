@@ -68,4 +68,9 @@
     <AndroidAsset Include="credentials.json" />
   </ItemGroup>
 
+  <!-- Preserve Google.Apis types from the Android linker so OAuth sign-in works. -->
+  <ItemGroup Condition="$(TargetFramework.Contains('android'))">
+    <LinkDescription Include="Platforms\Android\link.xml" />
+  </ItemGroup>
+
 </Project>

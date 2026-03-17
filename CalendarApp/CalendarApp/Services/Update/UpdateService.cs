@@ -153,8 +153,7 @@ public class UpdateService : IUpdateService
             if (string.IsNullOrEmpty(tagName)) return false;
 
             var remoteVersion = tagName.TrimStart('v');
-            var currentVersion = System.Reflection.Assembly
-                .GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "0.0.0";
+            var currentVersion = GetCurrentVersion();
 
             Console.WriteLine($"[UpdateService] Current={currentVersion}  Remote={remoteVersion}");
 
@@ -178,6 +177,20 @@ public class UpdateService : IUpdateService
         return Version.TryParse(remote, out var r) &&
                Version.TryParse(current, out var c) &&
                r > c;
+    }
+
+    private static string GetCurrentVersion()
+    {
+        try
+        {
+            var ctx  = Android.App.Application.Context;
+            var info = ctx.PackageManager!.GetPackageInfo(ctx.PackageName!, 0);
+            return info?.VersionName ?? "0.0.0";
+        }
+        catch
+        {
+            return "0.0.0";
+        }
     }
 #endif
 }
