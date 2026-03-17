@@ -196,6 +196,7 @@ public partial class SettingsViewModel : ObservableObject
     public ICommand InstallUpdateCommand { get; }
     public ICommand OpenReleasesPageCommand { get; }
     public ICommand ExitAppCommand { get; }
+    public ICommand ReportIssueCommand { get; }
 
     public SettingsViewModel(
         INavigator navigator,
@@ -227,6 +228,7 @@ public partial class SettingsViewModel : ObservableObject
         InstallUpdateCommand    = new RelayCommand(InstallUpdate, () => IsUpdateReady);
         OpenReleasesPageCommand = new AsyncRelayCommand(OpenReleasesPageAsync);
         ExitAppCommand          = new RelayCommand(ExitApp);
+        ReportIssueCommand      = new AsyncRelayCommand(ReportIssueAsync);
 
         // Reflect current auth state immediately
         IsGoogleSignedIn   = _googleAuthService.IsSignedIn;
@@ -737,6 +739,41 @@ public partial class SettingsViewModel : ObservableObject
 #if __ANDROID__
         Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
 #endif
+    }
+
+    private async Task ReportIssueAsync()
+    {
+        try
+        {
+            var platform =
+#if __ANDROID__
+                "Android";
+#elif __SKIA__
+                "Windows/Desktop";
+#else
+                "Other";
+#endif
+            var version = AppVersion;
+
+            // Build a pre-filled GitHub new-issue URL. No API token needed —
+            // the browser opens the GitHub form with title/body pre-populated.
+            const string repoBase = "https://github.com/laytondavis/CalendarApp";
+            var title = Uri.EscapeDataString($"[Bug] {platform} — <describe issue here>");
+            var body = Uri.EscapeDataString(
+                $"**App version:** {version}\n" +
+                $"**Platform:** {platform}\n\n" +
+                "**Steps to reproduce:**\n1. \n2. \n\n" +
+                "**Expected behavior:**\n\n" +
+                "**Actual behavior:**\n\n" +
+                "**Additional context / screenshots:**\n");
+
+            var url = $"{repoBase}/issues/new?title={title}&body={body}";
+            await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[CalendarApp] Could not open issue reporter: {ex.Message}");
+        }
     }
 
     private async Task SearchLocationsAsync()
