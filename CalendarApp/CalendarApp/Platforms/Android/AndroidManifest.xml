@@ -5,13 +5,34 @@
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
   <application android:allowBackup="true" android:supportsRtl="true"
                android:usesCleartextTraffic="true">
+
     <!--
-      OAuthWebViewActivity hosts Google's sign-in page in an in-app WebView so
-      that the http://127.0.0.1 redirect is intercepted before Chrome's Private
-      Network Access policy can block it. Not exported — only started by the app.
+      PATH A — Web application OAuth client (credentials_android.json present):
+      OAuthRedirectActivity receives the custom-scheme redirect from Chrome
+      after the user consents on Google's sign-in page.
+    -->
+    <activity
+      android:name="com.companyname.calendarapp.OAuthRedirectActivity"
+      android:exported="true"
+      android:noHistory="true">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="com.companyname.calendarapp"
+              android:host="oauth2redirect" />
+      </intent-filter>
+    </activity>
+
+    <!--
+      PATH B — Desktop OAuth client fallback (no credentials_android.json):
+      OAuthWebViewActivity shows Google's sign-in page in an in-app WebView
+      so the http://127.0.0.1 redirect is intercepted before Chrome's Private
+      Network Access policy can block it.
     -->
     <activity
       android:name="com.companyname.calendarapp.OAuthWebViewActivity"
       android:exported="false" />
+
   </application>
 </manifest>
