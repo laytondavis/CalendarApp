@@ -2,6 +2,7 @@
 #if __ANDROID__
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Auth.OAuth2.Requests;
+using Google.Apis.Auth.OAuth2.Responses;
 
 namespace CalendarApp.Platforms.Android;
 
@@ -38,21 +39,24 @@ public class AndroidCodeReceiver : ICodeReceiver
 
     // Static TCS so OAuthRedirectActivity can deliver the result from a
     // different call stack without needing a direct reference to this instance.
-    private static TaskCompletionSource<string>? _pendingTcs;
+    private static TaskCompletionSource<AuthorizationCodeResponseUrl>? _pendingTcs;
 
     /// <inheritdoc />
-    public Task<string> ReceiveCodeAsync(
+    public Task<AuthorizationCodeResponseUrl> ReceiveCodeAsync(
         AuthorizationCodeRequestUrl url,
         CancellationToken taskCancellationToken)
     {
-        var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource<AuthorizationCodeResponseUrl>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
         _pendingTcs = tcs;
 
         taskCancellationToken.Register(() =>
             tcs.TrySetCanceled(taskCancellationToken));
 
         var authUrl = url.Build().AbsoluteUri;
-        Console.WriteLine($"[CalendarApp] AndroidCodeReceiver: opening browser for OAuth → {authUrl[..Math.Min(80, authUrl.Length)]}…");
+        Console.WriteLine(
+            $"[CalendarApp] AndroidCodeReceiver: opening browser for OAuth → " +
+            $"{authUrl[..Math.Min(80, authUrl.Length)]}…");
 
         var intent = new global::Android.Content.Intent(
             global::Android.Content.Intent.ActionView,
@@ -65,14 +69,45 @@ public class AndroidCodeReceiver : ICodeReceiver
 
     /// <summary>
     /// Called by OAuthRedirectActivity when the custom-scheme redirect arrives.
-    /// Parses the full redirect URI and extracts the "code" query parameter,
+    /// Parses the full redirect URI and fills an AuthorizationCodeResponseUrl,
     /// then resolves the pending TaskCompletionSource.
     /// </summary>
     public static void Complete(string redirectUri)
     {
         Console.WriteLine($"[CalendarApp] AndroidCodeReceiver.Complete: {redirectUri}");
-        _pendingTcs?.TrySetResult(redirectUri);
+        var response = ParseRedirectUri(redirectUri);
+        _pendingTcs?.TrySetResult(response);
         _pendingTcs = null;
+    }
+
+    private static AuthorizationCodeResponseUrl ParseRedirectUri(string redirectUri)
+    {
+        var response = new AuthorizationCodeResponseUrl();
+        try
+        {
+            var uri = new Uri(redirectUri);
+            var query = uri.Query.TrimStart('?');
+            foreach (var pair in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var kv = pair.Split('=', 2);
+                if (kv.Length != 2) continue;
+                var key   = Uri.UnescapeDataString(kv[0]);
+                var value = Uri.UnescapeDataString(kv[1]);
+                switch (key)
+                {
+                    case "code":              response.Code             = value; break;
+                    case "state":             response.State            = value; break;
+                    case "error":             response.Error            = value; break;
+                    case "error_description": response.ErrorDescription = value; break;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[CalendarApp] Error parsing OAuth redirect URI: {ex.Message}");
+            response.Error = "parse_error";
+        }
+        return response;
     }
 }
 #endif
