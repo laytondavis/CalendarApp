@@ -5,7 +5,7 @@ using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using Microsoft.Extensions.Logging;
 #if __ANDROID__
-using CalendarApp.Platforms.Android;
+using CalendarApp.Platforms.Android; // AndroidWebViewCodeReceiver
 #endif
 
 namespace CalendarApp.Services.Google;
@@ -241,15 +241,17 @@ public class GoogleAuthService : IGoogleAuthService
 
     /// <summary>
     /// Returns the platform-appropriate OAuth code receiver.
-    /// On Android, Chrome blocks redirects to http://localhost (Private Network
-    /// Access policy), so we use a custom URI scheme via AndroidCodeReceiver.
+    /// On Android we use an in-app WebView (AndroidWebViewCodeReceiver) so the
+    /// redirect to http://127.0.0.1 is intercepted before Chrome's Private
+    /// Network Access policy can block it. No Google Cloud Console changes needed
+    /// — Desktop app clients allow any localhost port automatically.
     /// On all other platforms null lets GoogleWebAuthorizationBroker use its
-    /// default LoopbackCodeReceiver which works fine.
+    /// default LoopbackCodeReceiver (standard browser + localhost listener).
     /// </summary>
     private static ICodeReceiver? GetCodeReceiver()
     {
 #if __ANDROID__
-        return new AndroidCodeReceiver();
+        return new AndroidWebViewCodeReceiver();
 #else
         return null;
 #endif
