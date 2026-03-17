@@ -15,8 +15,23 @@ public partial class SettingsViewModel : ObservableObject
     /// by passing -p:Version=X.Y.Z to dotnet publish in the release workflow.
     /// Falls back to "1.0.0" for local dev builds where the version is not set.
     /// </summary>
-    public string AppVersion { get; } =
-        "v" + (System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "1.0.0");
+    public string AppVersion { get; } = GetAppVersion();
+
+    private static string GetAppVersion()
+    {
+#if __ANDROID__
+        try
+        {
+            var ctx = Android.App.Application.Context;
+            var info = ctx.PackageManager!.GetPackageInfo(ctx.PackageName!, 0);
+            return "v" + (info?.VersionName ?? "1.0.0");
+        }
+        catch { return "v1.0.0"; }
+#else
+        return "v" + (System.Reflection.Assembly.GetEntryAssembly()
+            ?.GetName().Version?.ToString(3) ?? "1.0.0");
+#endif
+    }
 
     private readonly INavigator _navigator;
     private readonly ILocationService _locationService;
