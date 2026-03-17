@@ -473,8 +473,18 @@ public partial class SettingsViewModel : ObservableObject
             GoogleAccountEmail = _googleAuthService.UserEmail ?? string.Empty;
             if (!success)
             {
-                GoogleStatusText = "Sign-in failed. Make sure credentials.json is present and try again.";
-                HasGoogleError   = true;
+                // Report a diagnostic path so it's clear whether the problem is
+                // a missing credentials file or a failed OAuth redirect.
+                var credPath = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "CalendarApp", "credentials.json");
+                var credExists = System.IO.File.Exists(credPath);
+                GoogleStatusText = credExists
+                    ? "Sign-in failed. credentials.json was found but the OAuth flow did not complete. " +
+                      "Check that 'http://localhost' is an authorized redirect URI in Google Cloud Console."
+                    : $"Sign-in failed. credentials.json not found at:\n{credPath}\n" +
+                      "Re-install the app or place the file there manually.";
+                HasGoogleError = true;
             }
             else
             {
