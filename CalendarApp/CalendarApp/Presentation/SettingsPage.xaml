@@ -543,6 +543,23 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- Report Issue — opens pre-filled GitHub issue in browser -->
+                        <Border Background="{ThemeResource SurfaceBrush}"
+                                CornerRadius="8"
+                                Padding="16">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Report an Issue"
+                                           Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                <TextBlock Text="Opens the GitHub issue tracker in your browser with a pre-filled bug report. No account needed to read issues; a free GitHub account is required to submit one."
+                                           Style="{StaticResource CaptionTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           TextWrapping="Wrap" />
+                                <Button Content="Open Issue Reporter"
+                                        Command="{Binding ReportIssueCommand}"
+                                        HorizontalAlignment="Stretch" />
+                            </StackPanel>
+                        </Border>
+
                         <!-- Exit App — Android only (makes it easy to close before installing an update) -->
                         <Border Background="{ThemeResource SurfaceBrush}"
                                 CornerRadius="8"
