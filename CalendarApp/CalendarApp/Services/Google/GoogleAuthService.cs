@@ -264,20 +264,30 @@ public class GoogleAuthService : IGoogleAuthService
 
     private static ClientSecrets? GetClientSecrets()
     {
-        // First try environment variables
+        // 1. Environment variables (CI / server deployments)
         var clientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
         var clientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
-
         if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
-        {
-            return new ClientSecrets
-            {
-                ClientId = clientId,
-                ClientSecret = clientSecret
-            };
-        }
+            return new ClientSecrets { ClientId = clientId, ClientSecret = clientSecret };
 
-        return LoadSecretsFromFile(GetCredentialsFilePath());
+        // 2. App-data folder (copied there by EnsureCredentialsInstalledAsync on startup)
+        var secrets = LoadSecretsFromFile(GetCredentialsFilePath());
+        if (secrets != null) return secrets;
+
+#if __ANDROID__
+        // 3. Android fallback: read directly from APK assets in case the file-copy step failed.
+        try
+        {
+            using var stream = Android.App.Application.Context.Assets!.Open("credentials.json");
+            return GoogleClientSecrets.FromStream(stream).Secrets;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[CalendarApp] Could not read credentials from Android assets: {ex.Message}");
+        }
+#endif
+
+        return null;
     }
 
     private static ClientSecrets? LoadSecretsFromFile(string? filePath)
