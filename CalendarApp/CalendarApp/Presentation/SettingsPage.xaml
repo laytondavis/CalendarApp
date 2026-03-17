@@ -36,9 +36,11 @@
         </Grid>
 
         <!-- Settings Content — four tabs, each with its own scroll area -->
-        <TabView Grid.Row="1"
+        <TabView x:Name="SettingsTabView"
+                 Grid.Row="1"
                  IsAddTabButtonVisible="False"
-                 TabWidthMode="Equal">
+                 TabWidthMode="Equal"
+                 Loaded="OnTabViewLoaded">
 
             <!-- ══════════════════════════════════════════════════
                  TAB 1 — VISUAL DISPLAY &amp; CALCULATIONS
