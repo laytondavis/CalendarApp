@@ -10,13 +10,15 @@ public sealed partial class SettingsPage : Page
     }
 
     /// <summary>
-    /// Forces the first tab to be selected after the TabView finishes loading.
-    /// Uno Platform sometimes renders the TabView with no tab selected, leaving
-    /// the first tab's content blank until the user manually clicks another tab
-    /// and returns. Setting SelectedIndex here after Loaded fires is the fix.
+    /// Forces the first tab's content into the visual tree by briefly switching
+    /// away and back. Uno Platform's TabView is lazy: even though the first tab
+    /// is selected by default, its content may not be fully realized until a
+    /// SelectionChanged event occurs. Setting SelectedIndex 0 → 1 → 0 triggers
+    /// that event and ensures all bindings are connected before the user sees the tab.
     /// </summary>
     private void OnTabViewLoaded(object sender, RoutedEventArgs e)
     {
+        SettingsTabView.SelectedIndex = 1;
         SettingsTabView.SelectedIndex = 0;
     }
 
@@ -30,7 +32,20 @@ public sealed partial class SettingsPage : Page
     {
         base.OnNavigatedTo(e);
         if (DataContext is SettingsViewModel vm)
+        {
             vm.OnNavigatedToSettings();
+
+            // LoadSettingsAsync reads from the DB and has a 500 ms cool-down before
+            // it clears _isLoading. After it finishes, fire another SelectedIndex
+            // toggle so Uno re-evaluates all bindings against the freshly loaded values.
+            DispatcherQueue.TryEnqueue(async () =>
+            {
+                await Task.Delay(900); // 500 ms finalization + ~400 ms DB margin
+                var idx = SettingsTabView.SelectedIndex;
+                SettingsTabView.SelectedIndex = idx == 0 ? 1 : 0;
+                SettingsTabView.SelectedIndex = idx;
+            });
+        }
     }
 
     /// <summary>
