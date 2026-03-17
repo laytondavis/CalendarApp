@@ -44,15 +44,18 @@ public class BiblicalCalendarService : ICalendarCalculationService
     }
 
     /// <summary>
-    /// Fetches the user's active location from the database and caches it.
+    /// Fetches the effective location and caches it.
+    /// Uses GetCurrentLocationAsync so that when LocationMode is GpsWithManualFallback
+    /// and a GPS fix is available, the GPS coordinates are used for all calculations
+    /// rather than the manually-pinned location.
     /// Safe to call repeatedly — re-fetches each time so changes made in Settings
-    /// are always picked up.
+    /// are always picked up on the next calendar refresh.
     /// </summary>
     public async Task InitializeLocationAsync()
     {
         try
         {
-            _cachedLocation = await _locationService.GetDefaultLocationAsync();
+            _cachedLocation = await _locationService.GetCurrentLocationAsync();
         }
         catch
         {
