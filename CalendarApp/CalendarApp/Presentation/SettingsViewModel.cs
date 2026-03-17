@@ -176,12 +176,17 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private bool _isDownloadingUpdate;
 
-    /// <summary>True on desktop (Velopack) and Android (GitHub APK check).</summary>
+    /// <summary>
+    /// True on desktop and Android (both have an update mechanism).
+    /// False only on WebAssembly where in-app updates are not applicable.
+    /// Note: __SKIA__ is NOT used here because it can be undefined on some
+    /// Uno SDK desktop configurations; instead we exclude only __BROWSERWASM__.
+    /// </summary>
     public bool IsUpdateSupported { get; } =
-#if __SKIA__ || __ANDROID__
-        true;
-#else
+#if __BROWSERWASM__
         false;
+#else
+        true;
 #endif
 
     /// <summary>True on Android only — used to show the Exit App button.</summary>
