@@ -10,6 +10,17 @@ public sealed partial class SettingsPage : Page
     }
 
     /// <summary>
+    /// Forces the first tab to be selected after the TabView finishes loading.
+    /// Uno Platform sometimes renders the TabView with no tab selected, leaving
+    /// the first tab's content blank until the user manually clicks another tab
+    /// and returns. Setting SelectedIndex here after Loaded fires is the fix.
+    /// </summary>
+    private void OnTabViewLoaded(object sender, RoutedEventArgs e)
+    {
+        SettingsTabView.SelectedIndex = 0;
+    }
+
+    /// <summary>
     /// Fires every time Settings becomes the active page.
     /// Reloads all settings from the database so the displayed values are always
     /// current, and resets the closed-message flag so MainViewModel is notified
