@@ -8,19 +8,21 @@
 
     <!--
       PATH A — Web application OAuth client (credentials_android.json present):
-      OAuthRedirectActivity receives the custom-scheme redirect from Chrome
-      after the user consents on Google's sign-in page.
+      OAuthRedirectActivity receives the HTTPS App Link redirect from Chrome.
+      android:autoVerify="true" causes Android to verify assetlinks.json at
+      https://LaytonsComputers.com/.well-known/assetlinks.json so the redirect
+      routes here without a browser-chooser dialog.
     -->
     <activity
       android:name="com.companyname.calendarapp.OAuthRedirectActivity"
       android:exported="true"
       android:noHistory="true">
-      <intent-filter>
+      <intent-filter android:autoVerify="true">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="com.companyname.calendarapp"
-              android:host="oauth2redirect" />
+        <data android:scheme="https"
+              android:host="LaytonsComputers.com" />
       </intent-filter>
     </activity>
 

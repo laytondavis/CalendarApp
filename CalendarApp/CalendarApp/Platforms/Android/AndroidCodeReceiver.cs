@@ -7,21 +7,23 @@ using Google.Apis.Auth.OAuth2.Responses;
 namespace CalendarApp.Platforms.Android;
 
 /// <summary>
-/// OAuth code receiver that uses a custom URI scheme redirect.
-/// Used when credentials_android.json (Web application OAuth client) is
-/// present. Google opens in Chrome; after consent Chrome routes the
-/// redirect URI back to OAuthRedirectActivity via Android's intent system,
-/// completely bypassing the Private Network Access block that affects
-/// http://localhost redirects.
+/// OAuth code receiver for use with a Web application OAuth client.
+/// Google opens in Chrome; after consent Chrome navigates to the HTTPS
+/// redirect URI. Android App Links (autoVerify) route that URL directly
+/// back to OAuthRedirectActivity without showing a browser chooser,
+/// bypassing the Private Network Access block that affects localhost.
 ///
-/// Requires: the Web application OAuth client in Google Cloud Console must
-/// have  com.companyname.calendarapp://oauth2redirect  in its authorized
-/// redirect URIs.
+/// Requires:
+///   • Web application OAuth client in Google Cloud Console with
+///     https://LaytonsComputers.com in its authorized redirect URIs.
+///   • /.well-known/assetlinks.json served from LaytonsComputers.com
+///     listing this app's SHA-256 signing certificate (see README for
+///     keytool command to obtain the fingerprint).
 /// </summary>
 public class AndroidCodeReceiver : ICodeReceiver
 {
     public const string RedirectUriString =
-        "com.companyname.calendarapp://oauth2redirect";
+        "https://LaytonsComputers.com";
 
     public string RedirectUri => RedirectUriString;
 
