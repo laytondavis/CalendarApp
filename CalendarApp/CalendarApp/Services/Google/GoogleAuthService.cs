@@ -271,11 +271,24 @@ public class GoogleAuthService : IGoogleAuthService
             return new ClientSecrets { ClientId = clientId, ClientSecret = clientSecret };
 
         // 2. App-data folder (copied there by EnsureCredentialsInstalledAsync on startup)
-        var secrets = LoadSecretsFromFile(GetCredentialsFilePath());
+        var appDataPath = GetCredentialsFilePath();
+        Console.WriteLine($"[CalendarApp] GetClientSecrets: checking AppData path: {appDataPath} (exists={File.Exists(appDataPath)})");
+        var secrets = LoadSecretsFromFile(appDataPath);
         if (secrets != null) return secrets;
 
+#if __SKIA__
+        // 3. Desktop fallback: read directly from the app's install/run directory.
+        //    Velopack installs the app with credentials.json alongside the executable;
+        //    if the AppData copy hasn't happened yet, this keeps sign-in working.
+        var baseDir = AppContext.BaseDirectory;
+        var baseDirPath = Path.Combine(baseDir, "credentials.json");
+        Console.WriteLine($"[CalendarApp] GetClientSecrets: checking BaseDir path: {baseDirPath} (exists={File.Exists(baseDirPath)})");
+        var baseDirSecrets = LoadSecretsFromFile(baseDirPath);
+        if (baseDirSecrets != null) return baseDirSecrets;
+#endif
+
 #if __ANDROID__
-        // 3. Android fallback: read directly from APK assets in case the file-copy step failed.
+        // 4. Android fallback: read directly from APK assets in case the file-copy step failed.
         try
         {
             using var stream = Android.App.Application.Context.Assets!.Open("credentials.json");
