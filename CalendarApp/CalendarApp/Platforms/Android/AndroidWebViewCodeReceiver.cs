@@ -1,44 +1,37 @@
 // Android-only file — only compiled for net9.0-android
 #if __ANDROID__
-using Google.Apis.Auth.OAuth2;
 using Google.Apis.Auth.OAuth2.Requests;
 using Google.Apis.Auth.OAuth2.Responses;
+using Google.Apis.Auth.OAuth2;
 
 namespace CalendarApp.Platforms.Android;
 
 /// <summary>
-/// Custom OAuth 2.0 code receiver for Android.
+/// OAuth 2.0 code receiver for Android that shows Google's sign-in page
+/// in an in-app WebView rather than launching Chrome.
 ///
-/// Chrome (and other Android browsers) block redirects from the HTTPS Google
-/// OAuth consent page to http://localhost or http://127.0.0.1 via Chrome's
-/// Private Network Access policy. The loopback approach that works fine on
-/// desktop simply never delivers the authorization code on Android.
+/// WHY THIS APPROACH:
+/// Chrome blocks http://localhost redirects that originate from HTTPS pages
+/// (Chrome's Private Network Access policy). This means the standard
+/// LoopbackCodeReceiver never receives the authorization code when Chrome
+/// handles the OAuth flow.
 ///
-/// This receiver uses a custom URI scheme instead:
-///   com.companyname.calendarapp://oauth2redirect
+/// The WebView runs inside the app's process, so when Google redirects to
+/// http://127.0.0.1:5150/oauth2/callback the WebViewClient intercepts it
+/// before any network request is made — the blocking policy never applies.
 ///
-/// The flow is:
-///   1. This receiver opens the browser with the Google auth URL.
-///   2. After the user consents, Google redirects to the custom URI.
-///   3. Android routes that URI to OAuthRedirectActivity (registered in the
-///      manifest with a matching intent-filter).
-///   4. OAuthRedirectActivity calls AndroidCodeReceiver.Complete() which
-///      resolves the TaskCompletionSource and unblocks AuthorizeAsync.
-///
-/// IMPORTANT: You must add this redirect URI in Google Cloud Console →
-///   APIs & Services → Credentials → your Desktop app client →
-///   Authorized redirect URIs:  com.companyname.calendarapp://oauth2redirect
+/// Desktop OAuth clients (used here) automatically allow any localhost port
+/// as a redirect URI, so no changes are needed in Google Cloud Console.
 /// </summary>
-public class AndroidCodeReceiver : ICodeReceiver
+public class AndroidWebViewCodeReceiver : ICodeReceiver
 {
-    // Scheme must match the intent-filter in AndroidManifest.xml
-    public const string RedirectUriString = "com.companyname.calendarapp://oauth2redirect";
+    // Fixed port on 127.0.0.1 — Desktop app clients allow any localhost port
+    // automatically, so this does not need to be registered in Google Console.
+    internal const string RedirectUriString = "http://127.0.0.1:5150/oauth2/callback";
 
     /// <inheritdoc />
     public string RedirectUri => RedirectUriString;
 
-    // Static TCS so OAuthRedirectActivity can deliver the result from a
-    // different call stack without needing a direct reference to this instance.
     private static TaskCompletionSource<AuthorizationCodeResponseUrl>? _pendingTcs;
 
     /// <inheritdoc />
@@ -55,12 +48,13 @@ public class AndroidCodeReceiver : ICodeReceiver
 
         var authUrl = url.Build().AbsoluteUri;
         Console.WriteLine(
-            $"[CalendarApp] AndroidCodeReceiver: opening browser for OAuth → " +
+            $"[CalendarApp] AndroidWebViewCodeReceiver: opening WebView → " +
             $"{authUrl[..Math.Min(80, authUrl.Length)]}…");
 
         var intent = new global::Android.Content.Intent(
-            global::Android.Content.Intent.ActionView,
-            global::Android.Net.Uri.Parse(authUrl));
+            global::Android.App.Application.Context,
+            typeof(OAuthWebViewActivity));
+        intent.PutExtra("auth_url", authUrl);
         intent.AddFlags(global::Android.Content.ActivityFlags.NewTask);
         global::Android.App.Application.Context.StartActivity(intent);
 
@@ -68,24 +62,23 @@ public class AndroidCodeReceiver : ICodeReceiver
     }
 
     /// <summary>
-    /// Called by OAuthRedirectActivity when the custom-scheme redirect arrives.
-    /// Parses the full redirect URI and fills an AuthorizationCodeResponseUrl,
-    /// then resolves the pending TaskCompletionSource.
+    /// Called by OAuthWebViewActivity when the WebViewClient intercepts the
+    /// redirect to the fixed callback URI. Parses code/state/error from the
+    /// query string and resolves the pending task.
     /// </summary>
     public static void Complete(string redirectUri)
     {
-        Console.WriteLine($"[CalendarApp] AndroidCodeReceiver.Complete: {redirectUri}");
-        var response = ParseRedirectUri(redirectUri);
-        _pendingTcs?.TrySetResult(response);
+        Console.WriteLine($"[CalendarApp] AndroidWebViewCodeReceiver.Complete: {redirectUri}");
+        _pendingTcs?.TrySetResult(ParseRedirectUri(redirectUri));
         _pendingTcs = null;
     }
 
-    private static AuthorizationCodeResponseUrl ParseRedirectUri(string redirectUri)
+    internal static AuthorizationCodeResponseUrl ParseRedirectUri(string redirectUri)
     {
         var response = new AuthorizationCodeResponseUrl();
         try
         {
-            var uri = new Uri(redirectUri);
+            var uri   = new Uri(redirectUri);
             var query = uri.Query.TrimStart('?');
             foreach (var pair in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
             {
@@ -104,7 +97,7 @@ public class AndroidCodeReceiver : ICodeReceiver
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[CalendarApp] Error parsing OAuth redirect URI: {ex.Message}");
+            Console.WriteLine($"[CalendarApp] Error parsing OAuth redirect: {ex.Message}");
             response.Error = "parse_error";
         }
         return response;
