@@ -4,6 +4,10 @@ using Android.App;
 using Android.OS;
 using Android.Webkit;
 
+// Suppress the Xaml WebView that comes from global usings
+// to avoid ambiguity with Android.Webkit.WebView
+using WebView = Android.Webkit.WebView;
+
 namespace CalendarApp.Platforms.Android;
 
 /// <summary>
@@ -62,7 +66,7 @@ public class OAuthWebViewActivity : Activity
             => _activity = activity;
 
         public override bool ShouldOverrideUrlLoading(
-            global::Android.Webkit.WebView? view, IWebResourceRequest? request)
+            WebView? view, IWebResourceRequest? request)
         {
             var url = request?.Url?.ToString() ?? string.Empty;
 
