@@ -1532,7 +1532,7 @@ public partial class MainViewModel : ObservableObject
             var tzAbbrev = GetTimeZoneAbbreviation(tz, dayStartLocal);
 
             return compact
-                ? $"↓{dayStartLocal:h:mm tt} {tzAbbrev}"
+                ? $"{dayStartLocal:h:mm tt} {tzAbbrev}"
                 : $"Day began: {dayStartLocal:h:mm tt} {tzAbbrev}";
         }
         catch { }

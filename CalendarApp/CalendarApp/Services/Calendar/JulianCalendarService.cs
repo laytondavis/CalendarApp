@@ -78,7 +78,7 @@ public class JulianCalendarService : ICalendarCalculationService
 
     public string GetCrossReferenceDisplay(CalendarDate date)
     {
-        return $"Gregorian: {date.GregorianEquivalent:MMMM d, yyyy}";
+        return $"G:{date.GregorianEquivalent.Day}";
     }
 
     public IEnumerable<CalendarDate> GetMonthGrid(int year, int month)
