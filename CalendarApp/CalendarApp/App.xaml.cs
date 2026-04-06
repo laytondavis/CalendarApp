@@ -254,9 +254,13 @@ public partial class App : Application
                 "CalendarApp");
             var destPath = Path.Combine(destFolder, "credentials.json");
 
-            // Skip if a valid-looking file already exists (> 50 bytes = real JSON).
-            // Replace an empty or zero-byte file left by a failed prior install.
-            if (File.Exists(destPath) && new FileInfo(destPath).Length > 50) return;
+            // If a valid-looking file already exists in AppData (> 50 bytes = real JSON),
+            // assume it was installed in a prior version — preserve it across updates.
+            if (File.Exists(destPath) && new FileInfo(destPath).Length > 50)
+            {
+                Console.WriteLine("[CalendarApp] credentials.json already exists in AppData — preserving across update.");
+                return;
+            }
 
             Directory.CreateDirectory(destFolder);
 
@@ -274,7 +278,10 @@ public partial class App : Application
             }
             else
             {
-                Console.WriteLine($"[CalendarApp] credentials.json not found at '{srcPath}' — Google sign-in unavailable.");
+                // credentials.json not in app directory after update.
+                // This is expected if the bundle doesn't include it (credentials come from CI secrets).
+                // User will be prompted to sign in; a warning will be logged if sign-in is attempted.
+                Console.WriteLine($"[CalendarApp] credentials.json not found at '{srcPath}' — will be checked again on sign-in.");
             }
             await Task.CompletedTask;
 #else

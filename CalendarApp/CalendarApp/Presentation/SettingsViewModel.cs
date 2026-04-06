@@ -487,8 +487,10 @@ public partial class SettingsViewModel : ObservableObject
                 GoogleStatusText = credExists
                     ? "Sign-in failed. credentials.json was found but the OAuth flow did not complete. " +
                       "Check that 'http://localhost' is an authorized redirect URI in Google Cloud Console."
-                    : $"Sign-in failed. credentials.json not found at:\n{credPath}\n" +
-                      "Re-install the app or place the file there manually.";
+                    : $"Sign-in failed. credentials.json not found.\n" +
+                      $"Expected location: {credPath}\n" +
+                      "If you updated the app after a fresh install, the file may not have been saved. " +
+                      "Download credentials.json from Google Cloud Console and place it in that folder.";
                 HasGoogleError = true;
             }
             else
