@@ -62,7 +62,7 @@ public class OAuthWebViewActivity : Activity
             => _activity = activity;
 
         public override bool ShouldOverrideUrlLoading(
-            WebView? view, IWebResourceRequest? request)
+            Android.Webkit.WebView? view, IWebResourceRequest? request)
         {
             var url = request?.Url?.ToString() ?? string.Empty;
 
