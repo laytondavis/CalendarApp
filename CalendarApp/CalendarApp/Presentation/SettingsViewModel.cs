@@ -933,6 +933,17 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Loads settings and waits for the load to complete (including the 500ms cool-down).
+    /// Used by SettingsPage to coordinate UI updates after settings are loaded.
+    /// </summary>
+    public async Task LoadSettingsAndWaitAsync()
+    {
+        _settingsClosedMessageSent = false;
+        _googleCalendarSelectionChanged = false;
+        await LoadSettingsAsync();
+    }
+
+    /// <summary>
     /// Sends SettingsClosedMessage if it hasn't been sent yet for this session.
     /// Called from both GoBackAsync (in-app back button) and SettingsPage.OnNavigatedFrom
     /// (Android native back button / swipe-back) so MainViewModel always refreshes.

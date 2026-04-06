@@ -24,26 +24,35 @@ public sealed partial class SettingsPage : Page
 
     /// <summary>
     /// Fires every time Settings becomes the active page.
-    /// Reloads all settings from the database so the displayed values are always
-    /// current, and resets the closed-message flag so MainViewModel is notified
-    /// when the user leaves this time.
+    /// Loads all settings from the database asynchronously, then resets the TabView's
+    /// selection to force content realization with the newly loaded values. This ensures
+    /// all ComboBox selections, TextBlock bindings, etc., are properly displayed.
     /// </summary>
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
         if (DataContext is SettingsViewModel vm)
         {
-            vm.OnNavigatedToSettings();
-
-            // LoadSettingsAsync reads from the DB and has a 500 ms cool-down before
-            // it clears _isLoading. After it finishes, fire another SelectedIndex
-            // toggle so Uno re-evaluates all bindings against the freshly loaded values.
-            DispatcherQueue.TryEnqueue(async () =>
+            // Fire and forget the full load cycle, then refresh the tab view
+            _ = Task.Run(async () =>
             {
-                await Task.Delay(900); // 500 ms finalization + ~400 ms DB margin
-                var idx = SettingsTabView.SelectedIndex;
-                SettingsTabView.SelectedIndex = idx == 0 ? 1 : 0;
-                SettingsTabView.SelectedIndex = idx;
+                try
+                {
+                    // Wait for settings to fully load (including DB cool-down)
+                    await vm.LoadSettingsAndWaitAsync();
+
+                    // Once loading is complete, toggle the tab view to force bindings to update
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        var idx = SettingsTabView.SelectedIndex;
+                        SettingsTabView.SelectedIndex = idx == 0 ? 1 : 0;
+                        SettingsTabView.SelectedIndex = idx;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[CalendarApp] Error in SettingsPage.OnNavigatedTo: {ex}");
+                }
             });
         }
     }
