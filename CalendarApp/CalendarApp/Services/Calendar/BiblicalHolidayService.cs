@@ -53,7 +53,13 @@ public class BiblicalHolidayService : IBiblicalHolidayService
             foreach (var h in holidays)
             {
                 if (h.GregorianDate.Date >= start.Date && h.GregorianDate.Date <= end.Date)
-                    result.TryAdd(h.GregorianDate.Date, h.Name);
+                {
+                    var dateKey = h.GregorianDate.Date;
+                    if (result.ContainsKey(dateKey))
+                        result[dateKey] += " • " + h.Name;  // Multiple holidays on same day → concatenate
+                    else
+                        result[dateKey] = h.Name;
+                }
             }
         }
 

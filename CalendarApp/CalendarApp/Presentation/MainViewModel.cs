@@ -1352,8 +1352,15 @@ public partial class MainViewModel : ObservableObject
                 foreach (var kvp in holidays)
                 {
                     var eve = kvp.Key.AddDays(-1);
-                    if (!holidays.ContainsKey(eve) && !eveEntries.ContainsKey(eve))
-                        eveEntries[eve] = $"Eve of {kvp.Value}";
+                    // Only add eve if there's no existing holiday on the eve day
+                    if (!holidays.ContainsKey(eve))
+                    {
+                        var eveDisplay = $"Eve of {kvp.Value}";
+                        if (eveEntries.ContainsKey(eve))
+                            eveEntries[eve] += " • " + eveDisplay;  // Multiple eves on same day → concatenate
+                        else
+                            eveEntries[eve] = eveDisplay;
+                    }
                 }
                 foreach (var kvp in eveEntries)
                     holidays[kvp.Key] = kvp.Value;
