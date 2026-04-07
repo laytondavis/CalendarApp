@@ -249,7 +249,9 @@ public partial class SettingsViewModel : ObservableObject
                 : $"Version {_updateService.NewVersionString} is available.";
         }
 
-        _ = LoadSettingsAsync();
+        // Settings are loaded by LoadSettingsAndWaitAsync() called from
+        // SettingsPage.OnTabViewLoaded, ensuring data is ready before the
+        // tab content is realized.
     }
 
     public ICommand GoBackCommand { get; }
@@ -931,7 +933,9 @@ public partial class SettingsViewModel : ObservableObject
     {
         _settingsClosedMessageSent = false;
         _googleCalendarSelectionChanged = false;
-        _ = LoadSettingsAsync();
+        // Don't load here — LoadSettingsAndWaitAsync() in OnTabViewLoaded is the
+        // single load point, ensuring data is ready before the tab toggle forces
+        // content realization.
     }
 
     /// <summary>
