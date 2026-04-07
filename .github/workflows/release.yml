@@ -26,9 +26,11 @@ jobs:
     outputs:
       semver: ${{ steps.ver.outputs.semver }}   # e.g. 1.2.3  (no 'v')
       tag:    ${{ steps.ver.outputs.tag    }}   # e.g. v1.2.3 (with 'v')
-      versionCode: ${{ steps.ver.outputs.versionCode }}  # numeric: e.g. 10203
+      androidVersionCode: ${{ steps.ver.outputs.androidVersionCode }}  # always-incrementing counter
     steps:
-      - name: Compute semver, tag, and versionCode
+      - uses: actions/checkout@v4
+
+      - name: Compute semver, tag, and Android versionCode
         id: ver
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
@@ -40,15 +42,12 @@ jobs:
           echo "semver=$SEMVER"     >> $GITHUB_OUTPUT
           echo "tag=v$SEMVER"       >> $GITHUB_OUTPUT
 
-          # Convert semver X.Y.Z to numeric versionCode X*10000 + Y*100 + Z
-          # e.g. 1.0.19 → 10000 + 0 + 19 = 10019
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$SEMVER"
-          MAJOR=${MAJOR:-0}
-          MINOR=${MINOR:-0}
-          PATCH=${PATCH:-0}
-          VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
-          echo "versionCode=$VERSION_CODE" >> $GITHUB_OUTPUT
-          echo "Computed: semver=$SEMVER  versionCode=$VERSION_CODE"
+          # Read and increment Android version code (always incrementing counter).
+          # This ensures APK versionCode never goes backward even if semver changes non-sequentially.
+          CURRENT_CODE=$(cat android-version-code.txt 2>/dev/null || echo 0)
+          NEW_CODE=$((CURRENT_CODE + 1))
+          echo "androidVersionCode=$NEW_CODE" >> $GITHUB_OUTPUT
+          echo "Android versionCode: $CURRENT_CODE → $NEW_CODE"
 
       # When triggered manually the tag may not exist yet — create and push it
       - name: Checkout (manual dispatch only)
@@ -202,7 +201,7 @@ jobs:
           -o publish/android
           -p:Version=${{ needs.prepare.outputs.semver }}
           -p:ApplicationDisplayVersion=${{ needs.prepare.outputs.semver }}
-          -p:ApplicationVersion=${{ needs.prepare.outputs.versionCode }}
+          -p:ApplicationVersion=${{ needs.prepare.outputs.androidVersionCode }}
           -p:AndroidSigningKeyStore="$(Resolve-Path android.keystore)"
           -p:AndroidSigningKeyAlias="${{ secrets.ANDROID_KEY_ALIAS }}"
           -p:AndroidSigningKeyPass="${{ secrets.ANDROID_KEY_PASS }}"
@@ -234,6 +233,8 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
+
       - name: Download Windows release files
         uses: actions/download-artifact@v4
         with:
@@ -245,6 +246,15 @@ jobs:
         with:
           name: android-apk
           path: artifacts/android
+
+      - name: Update Android versionCode counter
+        run: |
+          echo "${{ needs.prepare.outputs.androidVersionCode }}" > android-version-code.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add android-version-code.txt
+          git commit -m "Bump Android versionCode to ${{ needs.prepare.outputs.androidVersionCode }}" || echo "No changes to commit"
+          git push
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
