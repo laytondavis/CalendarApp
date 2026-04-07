@@ -78,21 +78,35 @@ public class UpdateService : IUpdateService
 
         try
         {
+            Console.WriteLine($"[UpdateService] Checking for updates from: {_githubRepo}");
             _manager = new UpdateManager(new GithubSource(_githubRepo, null, false));
 
             var updateInfo = await _manager.CheckForUpdatesAsync();
+            Console.WriteLine($"[UpdateService] CheckForUpdatesAsync returned: {(updateInfo == null ? "null" : "UpdateInfo")}");
+
             if (updateInfo == null)
             {
-                Console.WriteLine("[UpdateService] Already up to date (null updateInfo).");
+                // Null means no update found. Log what version we think we're at.
+                try
+                {
+                    var currentInfo = await _manager.GetInformationAsync();
+                    Console.WriteLine($"[UpdateService] Current installed version: {currentInfo?.CurrentVersion?.ToString() ?? "unknown"}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[UpdateService] Could not read current version: {ex.Message}");
+                }
+                Console.WriteLine("[UpdateService] No update available (already up to date or version check failed).");
                 return false;
             }
 
-            NewVersionString  = updateInfo.TargetFullRelease.Version.ToString();
-            var currentVersion = updateInfo.CurrentVersion?.ToString() ?? "unknown";
-            Console.WriteLine($"[UpdateService] Current={currentVersion}  Remote={NewVersionString}");
+            var currentVer = updateInfo.CurrentVersion?.ToString() ?? "unknown";
+            var remoteVer = updateInfo.TargetFullRelease.Version.ToString();
+            Console.WriteLine($"[UpdateService] Current={currentVer}  Remote={remoteVer}");
 
+            NewVersionString  = remoteVer;
             IsUpdateAvailable = true;
-            Console.WriteLine($"[UpdateService] Update found: v{NewVersionString} — downloading...");
+            Console.WriteLine($"[UpdateService] Update found: v{remoteVer} — downloading...");
 
             await _manager.DownloadUpdatesAsync(updateInfo, p => progress?.Report(p));
 
@@ -103,7 +117,7 @@ public class UpdateService : IUpdateService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[UpdateService] Check/download failed: {ex.Message}");
+            Console.WriteLine($"[UpdateService] Check/download failed: {ex.Message}\n{ex.StackTrace}");
             return false;
         }
     }
