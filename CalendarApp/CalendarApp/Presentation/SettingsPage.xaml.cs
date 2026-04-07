@@ -15,30 +15,32 @@ public sealed partial class SettingsPage : Page
     /// Uno Platform's TabView is lazy: even though the first tab is selected by default,
     /// its content may not be fully realized until a SelectionChanged event occurs.
     /// </summary>
-    private void OnTabViewLoaded(object sender, RoutedEventArgs e)
+    private async void OnTabViewLoaded(object sender, RoutedEventArgs e)
     {
         if (DataContext is not SettingsViewModel vm) return;
 
-        // Dispatch async to ensure settings are fully loaded before rendering tabs
-        DispatcherQueue.TryEnqueue(async () =>
+        try
         {
-            try
-            {
-                // Load settings from database (includes cool-down for DB consistency)
-                await vm.LoadSettingsAndWaitAsync();
+            // Load settings from database before any tab content is shown
+            await vm.LoadSettingsAndWaitAsync();
 
-                // Now toggle the tab view to force content realization with loaded values
-                SettingsTabView.SelectedIndex = 1;
-                SettingsTabView.SelectedIndex = 0;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[CalendarApp] Error in OnTabViewLoaded: {ex}");
-                // Fallback: still toggle even if load failed
-                SettingsTabView.SelectedIndex = 1;
-                SettingsTabView.SelectedIndex = 0;
-            }
-        });
+            // Yield to let the UI process the loaded data bindings
+            await Task.Delay(50);
+
+            // Toggle the tab view to force Uno to realize the first tab's content
+            // with the now-populated data. A yield between toggles ensures the
+            // framework processes each SelectionChanged event separately.
+            SettingsTabView.SelectedIndex = 1;
+            await Task.Delay(50);
+            SettingsTabView.SelectedIndex = 0;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[CalendarApp] Error in OnTabViewLoaded: {ex}");
+            SettingsTabView.SelectedIndex = 1;
+            await Task.Delay(50);
+            SettingsTabView.SelectedIndex = 0;
+        }
     }
 
     /// <summary>
