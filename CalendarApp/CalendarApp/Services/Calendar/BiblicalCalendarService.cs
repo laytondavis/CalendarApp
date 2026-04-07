@@ -84,7 +84,7 @@ public class BiblicalCalendarService : ICalendarCalculationService
         var (biblicalYear, biblicalMonth, biblicalDay) =
             CalculateBiblicalDate(biblicalGregorianDate, location);
 
-        var crossRef = gregorianDateTime.Day.ToString();
+        var crossRef = gregorianDateTime.ToString("M/d/yyyy");
 
         return new CalendarDate(
             biblicalYear,
@@ -168,7 +168,7 @@ public class BiblicalCalendarService : ICalendarCalculationService
 
     public string GetCrossReferenceDisplay(CalendarDate date)
     {
-        return date.GregorianEquivalent.Day.ToString();
+        return date.GregorianEquivalent.ToString("M/d/yyyy");
     }
 
     public IEnumerable<CalendarDate> GetMonthGrid(int year, int month)

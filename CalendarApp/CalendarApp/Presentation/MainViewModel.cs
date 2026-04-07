@@ -1196,13 +1196,13 @@ public partial class MainViewModel : ObservableObject
     /// Adds a platform-appropriate prefix to a Gregorian cross-reference day number.
     /// Desktop: "Greg:N", Android: just "N" (no prefix in portrait; horizontal handled by layout).
     /// </summary>
-    private static string? FormatCrossReference(string? dayNumber)
+    private static string? FormatCrossReference(string? dateStr)
     {
-        if (string.IsNullOrEmpty(dayNumber)) return null;
+        if (string.IsNullOrEmpty(dateStr)) return null;
 #if __ANDROID__
-        return dayNumber;
+        return dateStr;
 #else
-        return $"Greg:{dayNumber}";
+        return $"Greg: {dateStr}";
 #endif
     }
 
