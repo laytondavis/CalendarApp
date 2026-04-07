@@ -33,15 +33,12 @@ public sealed partial class SettingsPage : Page
             await vm.LoadSettingsFromDbAsync();
             Console.WriteLine($"[SettingsPage] Settings loaded. ThemeIndex={vm.SelectedThemeIndex}, CalMode={vm.SelectedCalendarModeIndex}");
 
-            // The TabView lazily realizes its first tab's content. At this point
-            // the ComboBoxes may not be in the visual tree yet, so PropertyChanged
-            // has no listeners. Defer rebroadcast to the next dispatcher cycle so
-            // the layout pass completes and bindings connect first.
-            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-            {
-                Console.WriteLine($"[SettingsPage] Deferred rebroadcast firing. ThemeIndex={vm.SelectedThemeIndex}, CalMode={vm.SelectedCalendarModeIndex}");
-                vm.RebroadcastAllProperties();
-            });
+            // The TabView lazily realizes its first tab's content. Even after
+            // the async load, the ComboBoxes may not be in the visual tree yet.
+            // Yield to let layout passes complete, then rebroadcast.
+            await Task.Delay(100);
+            Console.WriteLine($"[SettingsPage] Post-delay rebroadcast. ThemeIndex={vm.SelectedThemeIndex}, CalMode={vm.SelectedCalendarModeIndex}");
+            vm.RebroadcastAllProperties();
         }
     }
 
