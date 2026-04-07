@@ -8,6 +8,21 @@ public sealed partial class SettingsPage : Page
     {
         this.InitializeComponent();
         this.DataContextChanged += OnDataContextChanged;
+        this.Loaded += OnPageLoaded;
+    }
+
+    private void OnPageLoaded(object sender, RoutedEventArgs e)
+    {
+        Console.WriteLine($"[SettingsPage] Loaded fired. DataContext type: {DataContext?.GetType().Name ?? "null"}");
+
+        // At Loaded time the visual tree is realized. If settings were already
+        // loaded (via DataContextChanged or constructor), re-broadcast all
+        // property values so that now-connected bindings pick them up.
+        if (DataContext is SettingsViewModel vm)
+        {
+            Console.WriteLine($"[SettingsPage] Loaded — requesting re-broadcast. ThemeIndex={vm.SelectedThemeIndex}, CalMode={vm.SelectedCalendarModeIndex}");
+            vm.RebroadcastAllProperties();
+        }
     }
 
     private async void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -17,6 +32,10 @@ public sealed partial class SettingsPage : Page
             Console.WriteLine("[SettingsPage] DataContextChanged — loading settings from DB");
             await vm.LoadSettingsFromDbAsync();
             Console.WriteLine($"[SettingsPage] Settings loaded. ThemeIndex={vm.SelectedThemeIndex}, CalMode={vm.SelectedCalendarModeIndex}");
+
+            // Belt-and-suspenders: re-broadcast after async load completes, in case
+            // bindings connected between DataContextChanged and the await resumption.
+            vm.RebroadcastAllProperties();
         }
     }
 

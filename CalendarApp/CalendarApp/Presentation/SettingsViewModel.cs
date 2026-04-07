@@ -260,6 +260,25 @@ public partial class SettingsViewModel : ObservableObject
 
     public async Task LoadSettingsFromDbAsync() => await LoadSettingsAsync();
 
+    /// <summary>
+    /// Re-fires PropertyChanged for every bindable settings property so that
+    /// controls that connected *after* the initial load pick up current values.
+    /// </summary>
+    public void RebroadcastAllProperties()
+    {
+        Console.WriteLine($"[SettingsVM] RebroadcastAllProperties: Theme={SelectedThemeIndex}, CalMode={SelectedCalendarModeIndex}, LocMode={SelectedLocationModeIndex}, AstroMode={SelectedAstronomyModeIndex}");
+        OnPropertyChanged(nameof(SelectedThemeIndex));
+        OnPropertyChanged(nameof(SelectedCalendarModeIndex));
+        OnPropertyChanged(nameof(UseLastSelectedCalendarType));
+        OnPropertyChanged(nameof(IsCalendarModeEditable));
+        OnPropertyChanged(nameof(SelectedLocationModeIndex));
+        OnPropertyChanged(nameof(SelectedAstronomyModeIndex));
+        OnPropertyChanged(nameof(ShowBiblicalHolidays));
+        OnPropertyChanged(nameof(ShowGregorianEvents));
+        OnPropertyChanged(nameof(ShowJulianEvents));
+        OnPropertyChanged(nameof(ShowBiblicalEvents));
+    }
+
     private async Task LoadSettingsAsync()
     {
         _isLoading = true;
