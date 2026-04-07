@@ -95,6 +95,15 @@ jobs:
             $bytes = [System.Convert]::FromBase64String(($env:CREDS_B64 -replace '[^A-Za-z0-9+/=]', ''))
             [System.IO.File]::WriteAllBytes("CalendarApp/CalendarApp/credentials.json", $bytes)
             Write-Host "Google credentials decoded successfully."
+
+            # Verify file was created
+            if (Test-Path "CalendarApp/CalendarApp/credentials.json") {
+              $size = (Get-Item "CalendarApp/CalendarApp/credentials.json").Length
+              Write-Host "✓ Verified: credentials.json created ($size bytes)"
+            } else {
+              Write-Error "✗ FAILED: credentials.json was not created!"
+              exit 1
+            }
           }
 
       - name: Publish (self-contained)
@@ -106,6 +115,18 @@ jobs:
           -o publish/desktop
           -p:Version=${{ needs.prepare.outputs.semver }}
           -p:ApplicationDisplayVersion=${{ needs.prepare.outputs.semver }}
+
+      - name: Verify credentials.json in publish output
+        shell: pwsh
+        run: |
+          if (Test-Path "publish/desktop/credentials.json") {
+            $size = (Get-Item "publish/desktop/credentials.json").Length
+            Write-Host "✓ credentials.json found in publish output ($size bytes)"
+          } else {
+            Write-Warning "⚠ credentials.json NOT in publish/desktop — will not be bundled"
+            Write-Host "  Check: does credentials.json exist before publish?"
+            Get-ChildItem "publish/desktop" -Filter "cred*" 2>$null | ForEach-Object { Write-Host "  Found: $_" }
+          }
 
       - name: Pack with Velopack
         shell: pwsh

@@ -278,35 +278,41 @@ public partial class App : Application
             }
 #elif __SKIA__
             // Search for credentials.json in multiple locations
-            var searchPaths = new List<string>
+            Console.WriteLine($"[CalendarApp] Searching for credentials.json starting from: {AppContext.BaseDirectory}");
+
+            var searchPaths = new List<string>();
+            var current = new DirectoryInfo(AppContext.BaseDirectory);
+
+            // Walk up the directory tree (Velopack may nest the app in subdirectories)
+            for (int i = 0; i < 5 && current != null; i++)
             {
-                Path.Combine(AppContext.BaseDirectory, "credentials.json"),
-                Path.Combine(Directory.GetParent(AppContext.BaseDirectory)?.FullName ?? "", "credentials.json"),
-                // Also try going up two levels (in case of Velopack nested dirs)
-                Path.Combine(Directory.GetParent(Directory.GetParent(AppContext.BaseDirectory)?.FullName ?? "")?.FullName ?? "", "credentials.json"),
-            };
+                searchPaths.Add(Path.Combine(current.FullName, "credentials.json"));
+                current = current.Parent;
+            }
 
             foreach (var srcPath in searchPaths)
             {
+                Console.WriteLine($"[CalendarApp] Checking: {srcPath}");
                 if (string.IsNullOrEmpty(srcPath) || !File.Exists(srcPath)) continue;
 
+                Console.WriteLine($"[CalendarApp] ✓ Found at: {srcPath}");
                 try
                 {
                     File.Copy(srcPath, destPath, overwrite: true);
-                    Console.WriteLine($"[CalendarApp] credentials.json installed to AppData from: {srcPath}");
+                    Console.WriteLine($"[CalendarApp] ✓ credentials.json copied to {destPath}");
                     return;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[CalendarApp] Could not copy credentials.json from {srcPath}: {ex.Message}");
+                    Console.WriteLine($"[CalendarApp] ✗ Could not copy from {srcPath}: {ex.Message}");
                 }
             }
 
             // If we reach here, credentials.json was not found in any location.
             // This is expected when the CI secret was not set during the build.
-            Console.WriteLine("[CalendarApp] credentials.json not found in app directory or AppData.");
-            Console.WriteLine($"[CalendarApp] Expected location: {destPath}");
-            Console.WriteLine("[CalendarApp] Ensure GOOGLE_CREDENTIALS_JSON_BASE64 secret is set in GitHub to include credentials during build.");
+            Console.WriteLine("[CalendarApp] ✗ credentials.json not found in any directory above app.");
+            Console.WriteLine($"[CalendarApp] Expected to install to: {destPath}");
+            Console.WriteLine("[CalendarApp] Verify: GOOGLE_CREDENTIALS_JSON_BASE64 secret is set on GitHub Actions.");
             await Task.CompletedTask;
 #else
             await Task.CompletedTask;
