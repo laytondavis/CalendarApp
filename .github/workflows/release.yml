@@ -26,8 +26,9 @@ jobs:
     outputs:
       semver: ${{ steps.ver.outputs.semver }}   # e.g. 1.2.3  (no 'v')
       tag:    ${{ steps.ver.outputs.tag    }}   # e.g. v1.2.3 (with 'v')
+      versionCode: ${{ steps.ver.outputs.versionCode }}  # numeric: e.g. 10203
     steps:
-      - name: Compute semver and tag
+      - name: Compute semver, tag, and versionCode
         id: ver
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
@@ -38,6 +39,16 @@ jobs:
           SEMVER="${RAW#v}"          # strip leading 'v'
           echo "semver=$SEMVER"     >> $GITHUB_OUTPUT
           echo "tag=v$SEMVER"       >> $GITHUB_OUTPUT
+
+          # Convert semver X.Y.Z to numeric versionCode X*10000 + Y*100 + Z
+          # e.g. 1.0.19 → 10000 + 0 + 19 = 10019
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$SEMVER"
+          MAJOR=${MAJOR:-0}
+          MINOR=${MINOR:-0}
+          PATCH=${PATCH:-0}
+          VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
+          echo "versionCode=$VERSION_CODE" >> $GITHUB_OUTPUT
+          echo "Computed: semver=$SEMVER  versionCode=$VERSION_CODE"
 
       # When triggered manually the tag may not exist yet — create and push it
       - name: Checkout (manual dispatch only)
@@ -191,6 +202,7 @@ jobs:
           -o publish/android
           -p:Version=${{ needs.prepare.outputs.semver }}
           -p:ApplicationDisplayVersion=${{ needs.prepare.outputs.semver }}
+          -p:ApplicationVersion=${{ needs.prepare.outputs.versionCode }}
           -p:AndroidSigningKeyStore="$(Resolve-Path android.keystore)"
           -p:AndroidSigningKeyAlias="${{ secrets.ANDROID_KEY_ALIAS }}"
           -p:AndroidSigningKeyPass="${{ secrets.ANDROID_KEY_PASS }}"
