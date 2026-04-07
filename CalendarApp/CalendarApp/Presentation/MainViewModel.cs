@@ -837,7 +837,7 @@ public partial class MainViewModel : ObservableObject
                 IsCurrentMonth = isCurrentMonth,
                 IsToday = isToday,
                 IsSelected = isSelected,
-                CrossReference = date.CrossReference,
+                CrossReference = FormatCrossReference(date.CrossReference),
                 LunarConjunctionDisplay = GetLunarConjunctionDisplay(date.GregorianEquivalent),
                 CrescentIlluminationDisplay = GetCrescentIlluminationDisplay(date.GregorianEquivalent),
                 DayStartDisplay = CurrentCalendarMode == CalendarMode.Biblical
@@ -920,7 +920,7 @@ public partial class MainViewModel : ObservableObject
                 DayNumber = date.Day,
                 IsToday = date.GregorianEquivalent.Date == today,
                 IsSelected = date.GregorianEquivalent.Date == SelectedDate.Date,
-                CrossReference = date.CrossReference,
+                CrossReference = FormatCrossReference(date.CrossReference),
                 LunarConjunctionDisplay = GetLunarConjunctionDisplay(date.GregorianEquivalent),
                 CrescentIlluminationDisplay = GetCrescentIlluminationDisplay(date.GregorianEquivalent),
                 DayStartDisplay = CurrentCalendarMode == CalendarMode.Biblical
@@ -1127,7 +1127,7 @@ public partial class MainViewModel : ObservableObject
                     Date = date,
                     DateDisplay = $"{dayName}, {monthName} {calDate.Day}",
                     IsToday = date == DateTime.Today,
-                    CrossReference = calDate.CrossReference,
+                    CrossReference = FormatCrossReference(calDate.CrossReference),
                     LunarConjunctionDisplay = GetLunarConjunctionDisplay(date),
                     CrescentIlluminationDisplay = GetCrescentIlluminationDisplay(date),
                     DayStartDisplay = CurrentCalendarMode == CalendarMode.Biblical
@@ -1151,7 +1151,7 @@ public partial class MainViewModel : ObservableObject
                 Date = DateTime.Today,
                 DateDisplay = $"{todayName}, {todayMonthName} {todayCalDate.Day}",
                 IsToday = true,
-                CrossReference = todayCalDate.CrossReference,
+                CrossReference = FormatCrossReference(todayCalDate.CrossReference),
                 LunarConjunctionDisplay = GetLunarConjunctionDisplay(DateTime.Today),
                 CrescentIlluminationDisplay = GetCrescentIlluminationDisplay(DateTime.Today),
                 DayStartDisplay = CurrentCalendarMode == CalendarMode.Biblical
@@ -1188,8 +1188,22 @@ public partial class MainViewModel : ObservableObject
     {
         var calendarDate = _calendarService.GetDateForDateTime(SelectedDate);
         CrossReferenceText = CurrentCalendarMode != CalendarMode.Gregorian
-            ? _calendarService.GetCrossReferenceDisplay(calendarDate)
+            ? FormatCrossReference(_calendarService.GetCrossReferenceDisplay(calendarDate))
             : null;
+    }
+
+    /// <summary>
+    /// Adds a platform-appropriate prefix to a Gregorian cross-reference day number.
+    /// Desktop: "Greg:N", Android: just "N" (no prefix in portrait; horizontal handled by layout).
+    /// </summary>
+    private static string? FormatCrossReference(string? dayNumber)
+    {
+        if (string.IsNullOrEmpty(dayNumber)) return null;
+#if __ANDROID__
+        return dayNumber;
+#else
+        return $"Greg:{dayNumber}";
+#endif
     }
 
     private async Task LoadEventsForSelectedDateAsync()
@@ -1357,7 +1371,7 @@ public partial class MainViewModel : ObservableObject
                     {
                         var eveDisplay = $"Eve of {kvp.Value}";
                         if (eveEntries.ContainsKey(eve))
-                            eveEntries[eve] += " • " + eveDisplay;  // Multiple eves on same day → concatenate
+                            eveEntries[eve] += "\n" + eveDisplay;  // Multiple eves on same day → concatenate
                         else
                             eveEntries[eve] = eveDisplay;
                     }
@@ -1365,7 +1379,7 @@ public partial class MainViewModel : ObservableObject
                 foreach (var kvp in eveEntries)
                 {
                     if (holidays.ContainsKey(kvp.Key))
-                        holidays[kvp.Key] += " • " + kvp.Value;  // Concatenate with existing holiday
+                        holidays[kvp.Key] += "\n" + kvp.Value;  // Concatenate with existing holiday
                     else
                         holidays[kvp.Key] = kvp.Value;
                 }

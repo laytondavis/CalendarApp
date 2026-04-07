@@ -933,9 +933,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         _settingsClosedMessageSent = false;
         _googleCalendarSelectionChanged = false;
-        // Don't load here — LoadSettingsAndWaitAsync() in OnTabViewLoaded is the
-        // single load point, ensuring data is ready before the tab toggle forces
-        // content realization.
+        _ = LoadSettingsAsync();
     }
 
     /// <summary>

@@ -15,6 +15,8 @@ public sealed partial class SettingsPage : Page
     /// Uno Platform's TabView is lazy: even though the first tab is selected by default,
     /// its content may not be fully realized until a SelectionChanged event occurs.
     /// </summary>
+    private bool _initialLoadDone;
+
     private async void OnTabViewLoaded(object sender, RoutedEventArgs e)
     {
         if (DataContext is not SettingsViewModel vm) return;
@@ -23,24 +25,49 @@ public sealed partial class SettingsPage : Page
         {
             // Load settings from database before any tab content is shown
             await vm.LoadSettingsAndWaitAsync();
-
-            // Yield to let the UI process the loaded data bindings
-            await Task.Delay(50);
-
-            // Toggle the tab view to force Uno to realize the first tab's content
-            // with the now-populated data. A yield between toggles ensures the
-            // framework processes each SelectionChanged event separately.
-            SettingsTabView.SelectedIndex = 1;
-            await Task.Delay(50);
-            SettingsTabView.SelectedIndex = 0;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[CalendarApp] Error in OnTabViewLoaded: {ex}");
-            SettingsTabView.SelectedIndex = 1;
-            await Task.Delay(50);
-            SettingsTabView.SelectedIndex = 0;
         }
+
+        // Force Uno to re-realize the first tab content now that data is loaded.
+        // We swap to tab 1, yield a frame, then swap back.
+        await ForceTabRefreshAsync();
+        _initialLoadDone = true;
+    }
+
+    /// <summary>
+    /// Called each time Settings is navigated to. On re-entry the TabView is
+    /// already loaded so OnTabViewLoaded won't fire again — refresh here instead.
+    /// </summary>
+    internal async void OnSettingsNavigatedTo()
+    {
+        if (!_initialLoadDone) return; // first load is handled by OnTabViewLoaded
+
+        if (DataContext is SettingsViewModel vm)
+        {
+            try
+            {
+                await vm.LoadSettingsAndWaitAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CalendarApp] Error reloading settings: {ex}");
+            }
+        }
+        await ForceTabRefreshAsync();
+    }
+
+    private async Task ForceTabRefreshAsync()
+    {
+        var current = SettingsTabView.SelectedIndex;
+        SettingsTabView.SelectedIndex = current == 0 ? 1 : 0;
+        // Yield a frame so Uno processes the SelectionChanged
+        var tcs = new TaskCompletionSource();
+        DispatcherQueue.TryEnqueue(() => tcs.SetResult());
+        await tcs.Task;
+        SettingsTabView.SelectedIndex = current;
     }
 
     /// <summary>
@@ -54,6 +81,7 @@ public sealed partial class SettingsPage : Page
         base.OnNavigatedTo(e);
         if (DataContext is SettingsViewModel vm)
             vm.OnNavigatedToSettings();
+        OnSettingsNavigatedTo();
     }
 
     /// <summary>

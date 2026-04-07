@@ -56,7 +56,7 @@ public class BiblicalHolidayService : IBiblicalHolidayService
                 {
                     var dateKey = h.GregorianDate.Date;
                     if (result.ContainsKey(dateKey))
-                        result[dateKey] += " • " + h.Name;  // Multiple holidays on same day → concatenate
+                        result[dateKey] += "\n" + h.Name;  // Multiple holidays on same day → separate lines
                     else
                         result[dateKey] = h.Name;
                 }
