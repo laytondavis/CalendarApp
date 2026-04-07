@@ -23,6 +23,8 @@ jobs:
   prepare:
     name: Resolve version
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       semver: ${{ steps.ver.outputs.semver }}   # e.g. 1.2.3  (no 'v')
       tag:    ${{ steps.ver.outputs.tag    }}   # e.g. v1.2.3 (with 'v')
