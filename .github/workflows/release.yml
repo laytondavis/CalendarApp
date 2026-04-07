@@ -247,6 +247,7 @@ jobs:
           -p:Version=${{ needs.prepare.outputs.semver }}
           -p:ApplicationDisplayVersion=${{ needs.prepare.outputs.semver }}
           -p:ApplicationVersion=${{ needs.prepare.outputs.androidVersionCode }}
+          -p:AndroidKeyStore=true
           -p:AndroidSigningKeyStore="$(Resolve-Path android.keystore)"
           -p:AndroidSigningKeyAlias="${{ secrets.ANDROID_KEY_ALIAS }}"
           -p:AndroidSigningKeyPass="${{ secrets.ANDROID_KEY_PASS }}"
