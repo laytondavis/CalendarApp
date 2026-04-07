@@ -265,24 +265,48 @@ public partial class App : Application
             Directory.CreateDirectory(destFolder);
 
 #if __ANDROID__
-            using var assetStream = Android.App.Application.Context.Assets!.Open("credentials.json");
-            using var destStream = File.Create(destPath);
-            await assetStream.CopyToAsync(destStream);
-            Console.WriteLine("[CalendarApp] credentials.json installed from Android asset.");
+            try
+            {
+                using var assetStream = Android.App.Application.Context.Assets!.Open("credentials.json");
+                using var destStream = File.Create(destPath);
+                await assetStream.CopyToAsync(destStream);
+                Console.WriteLine("[CalendarApp] credentials.json installed from Android asset.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CalendarApp] Could not load credentials.json from Android assets: {ex.Message}");
+            }
 #elif __SKIA__
-            var srcPath = Path.Combine(AppContext.BaseDirectory, "credentials.json");
-            if (File.Exists(srcPath))
+            // Search for credentials.json in multiple locations
+            var searchPaths = new List<string>
             {
-                File.Copy(srcPath, destPath, overwrite: true);
-                Console.WriteLine("[CalendarApp] credentials.json installed from app directory.");
-            }
-            else
+                Path.Combine(AppContext.BaseDirectory, "credentials.json"),
+                Path.Combine(Directory.GetParent(AppContext.BaseDirectory)?.FullName ?? "", "credentials.json"),
+                // Also try going up two levels (in case of Velopack nested dirs)
+                Path.Combine(Directory.GetParent(Directory.GetParent(AppContext.BaseDirectory)?.FullName ?? "")?.FullName ?? "", "credentials.json"),
+            };
+
+            foreach (var srcPath in searchPaths)
             {
-                // credentials.json not in app directory after update.
-                // This is expected if the bundle doesn't include it (credentials come from CI secrets).
-                // User will be prompted to sign in; a warning will be logged if sign-in is attempted.
-                Console.WriteLine($"[CalendarApp] credentials.json not found at '{srcPath}' — will be checked again on sign-in.");
+                if (string.IsNullOrEmpty(srcPath) || !File.Exists(srcPath)) continue;
+
+                try
+                {
+                    File.Copy(srcPath, destPath, overwrite: true);
+                    Console.WriteLine($"[CalendarApp] credentials.json installed to AppData from: {srcPath}");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[CalendarApp] Could not copy credentials.json from {srcPath}: {ex.Message}");
+                }
             }
+
+            // If we reach here, credentials.json was not found in any location.
+            // This is expected when the CI secret was not set during the build.
+            Console.WriteLine("[CalendarApp] credentials.json not found in app directory or AppData.");
+            Console.WriteLine($"[CalendarApp] Expected location: {destPath}");
+            Console.WriteLine("[CalendarApp] Ensure GOOGLE_CREDENTIALS_JSON_BASE64 secret is set in GitHub to include credentials during build.");
             await Task.CompletedTask;
 #else
             await Task.CompletedTask;

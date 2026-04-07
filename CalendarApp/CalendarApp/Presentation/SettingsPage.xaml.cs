@@ -11,50 +11,47 @@ public sealed partial class SettingsPage : Page
 
     /// <summary>
     /// Forces the first tab's content into the visual tree by briefly switching
-    /// away and back. Uno Platform's TabView is lazy: even though the first tab
-    /// is selected by default, its content may not be fully realized until a
-    /// SelectionChanged event occurs. Setting SelectedIndex 0 → 1 → 0 triggers
-    /// that event and ensures all bindings are connected before the user sees the tab.
+    /// away and back. But first, ensure settings are fully loaded from the database.
+    /// Uno Platform's TabView is lazy: even though the first tab is selected by default,
+    /// its content may not be fully realized until a SelectionChanged event occurs.
     /// </summary>
     private void OnTabViewLoaded(object sender, RoutedEventArgs e)
     {
-        SettingsTabView.SelectedIndex = 1;
-        SettingsTabView.SelectedIndex = 0;
+        if (DataContext is not SettingsViewModel vm) return;
+
+        // Dispatch async to ensure settings are fully loaded before rendering tabs
+        DispatcherQueue.TryEnqueue(async () =>
+        {
+            try
+            {
+                // Load settings from database (includes cool-down for DB consistency)
+                await vm.LoadSettingsAndWaitAsync();
+
+                // Now toggle the tab view to force content realization with loaded values
+                SettingsTabView.SelectedIndex = 1;
+                SettingsTabView.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CalendarApp] Error in OnTabViewLoaded: {ex}");
+                // Fallback: still toggle even if load failed
+                SettingsTabView.SelectedIndex = 1;
+                SettingsTabView.SelectedIndex = 0;
+            }
+        });
     }
 
     /// <summary>
     /// Fires every time Settings becomes the active page.
-    /// Loads all settings from the database asynchronously, then resets the TabView's
-    /// selection to force content realization with the newly loaded values. This ensures
-    /// all ComboBox selections, TextBlock bindings, etc., are properly displayed.
+    /// Calls OnNavigatedToSettings (which initializes location service, etc.)
+    /// but actual settings DB loading is deferred to OnTabViewLoaded to avoid
+    /// rendering the page before data is available.
     /// </summary>
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
         if (DataContext is SettingsViewModel vm)
-        {
-            // Fire and forget the full load cycle, then refresh the tab view
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    // Wait for settings to fully load (including DB cool-down)
-                    await vm.LoadSettingsAndWaitAsync();
-
-                    // Once loading is complete, toggle the tab view to force bindings to update
-                    DispatcherQueue.TryEnqueue(() =>
-                    {
-                        var idx = SettingsTabView.SelectedIndex;
-                        SettingsTabView.SelectedIndex = idx == 0 ? 1 : 0;
-                        SettingsTabView.SelectedIndex = idx;
-                    });
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[CalendarApp] Error in SettingsPage.OnNavigatedTo: {ex}");
-                }
-            });
-        }
+            vm.OnNavigatedToSettings();
     }
 
     /// <summary>
