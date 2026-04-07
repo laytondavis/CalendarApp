@@ -265,6 +265,15 @@ public partial class SettingsViewModel : ObservableObject
         _isLoading = true;
         try
         {
+            // Reset to -1 so that every assignment below fires PropertyChanged,
+            // even when the loaded value equals the old default (0).
+            // Without this, ComboBox controls stay blank when the DB value maps to index 0.
+            // _isLoading is already true, so these won't trigger saves.
+            SelectedThemeIndex = -1;
+            SelectedCalendarModeIndex = -1;
+            SelectedLocationModeIndex = -1;
+            SelectedAstronomyModeIndex = -1;
+
             await _dbContext.InitializeAsync();
 
             var themeSetting = await GetSettingAsync("Theme");
