@@ -27,7 +27,7 @@ public class JulianCalendarService : ICalendarCalculationService
         var julianMonth = _julianCalendar.GetMonth(gregorianDateTime);
         var julianDay = _julianCalendar.GetDayOfMonth(gregorianDateTime);
 
-        var crossRef = $"Greg {gregorianDateTime:M/d/yy}";
+        var crossRef = $"G:{gregorianDateTime.Day}";
 
         return new CalendarDate(
             julianYear,

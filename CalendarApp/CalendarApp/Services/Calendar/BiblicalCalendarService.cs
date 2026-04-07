@@ -84,8 +84,8 @@ public class BiblicalCalendarService : ICalendarCalculationService
         var (biblicalYear, biblicalMonth, biblicalDay) =
             CalculateBiblicalDate(biblicalGregorianDate, location);
 
-        // Cross-reference shows the Gregorian date
-        var crossRef = $"Greg {gregorianDateTime:M/d/yy}";
+        // Cross-reference shows the Gregorian date (compact format: "G:day")
+        var crossRef = $"G:{gregorianDateTime.Day}";
 
         return new CalendarDate(
             biblicalYear,
