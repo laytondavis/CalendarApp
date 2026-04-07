@@ -258,6 +258,8 @@ public partial class SettingsViewModel : ObservableObject
     public ICommand RemoveLocationCommand { get; }
     public ICommand SetActiveLocationCommand { get; }
 
+    public async Task LoadSettingsFromDbAsync() => await LoadSettingsAsync();
+
     private async Task LoadSettingsAsync()
     {
         _isLoading = true;
