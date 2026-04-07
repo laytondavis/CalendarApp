@@ -33,12 +33,66 @@ public sealed partial class SettingsPage : Page
             await vm.LoadSettingsFromDbAsync();
             Console.WriteLine($"[SettingsPage] Settings loaded. ThemeIndex={vm.SelectedThemeIndex}, CalMode={vm.SelectedCalendarModeIndex}");
 
-            // The TabView lazily realizes its first tab's content. Even after
-            // the async load, the ComboBoxes may not be in the visual tree yet.
-            // Yield to let layout passes complete, then rebroadcast.
-            await Task.Delay(100);
-            Console.WriteLine($"[SettingsPage] Post-delay rebroadcast. ThemeIndex={vm.SelectedThemeIndex}, CalMode={vm.SelectedCalendarModeIndex}");
-            vm.RebroadcastAllProperties();
+            // The TabView lazily realizes tab content, so {Binding} expressions
+            // on ComboBoxes/CheckBoxes inside the first tab may never receive the
+            // initial PropertyChanged. Bypass the binding system entirely and set
+            // controls directly from code-behind after a yield.
+            await Task.Delay(150);
+            PopulateTab1Controls(vm);
+        }
+    }
+
+    /// <summary>
+    /// Directly sets Tab 1 control values from the ViewModel, bypassing bindings
+    /// that may not have connected due to TabView lazy content realization.
+    /// Controls are inside TabViewItem (separate namescope) so we use FindName.
+    /// </summary>
+    private void PopulateTab1Controls(SettingsViewModel vm)
+    {
+        Console.WriteLine($"[SettingsPage] PopulateTab1Controls: Theme={vm.SelectedThemeIndex}, CalMode={vm.SelectedCalendarModeIndex}, " +
+                          $"AstroMode={vm.SelectedAstronomyModeIndex}, UseLastCal={vm.UseLastSelectedCalendarType}, " +
+                          $"ShowHolidays={vm.ShowBiblicalHolidays}");
+
+        try
+        {
+            if (FindName("ThemeComboBox") is ComboBox theme)
+                theme.SelectedIndex = vm.SelectedThemeIndex;
+            else
+                Console.WriteLine("[SettingsPage] ThemeComboBox not found via FindName");
+
+            if (FindName("CalendarModeComboBox") is ComboBox calMode)
+            {
+                calMode.SelectedIndex = vm.SelectedCalendarModeIndex;
+                calMode.IsEnabled = vm.IsCalendarModeEditable;
+            }
+            else
+                Console.WriteLine("[SettingsPage] CalendarModeComboBox not found via FindName");
+
+            if (FindName("AstronomyModeComboBox") is ComboBox astro)
+                astro.SelectedIndex = vm.SelectedAstronomyModeIndex;
+            else
+                Console.WriteLine("[SettingsPage] AstronomyModeComboBox not found via FindName");
+
+            if (FindName("UseLastCalTypeCheckBox") is CheckBox useLastCal)
+                useLastCal.IsChecked = vm.UseLastSelectedCalendarType;
+
+            if (FindName("ShowBiblicalHolidaysCheckBox") is CheckBox showHolidays)
+                showHolidays.IsChecked = vm.ShowBiblicalHolidays;
+
+            if (FindName("ShowGregorianEventsCheckBox") is CheckBox showGreg)
+                showGreg.IsChecked = vm.ShowGregorianEvents;
+
+            if (FindName("ShowJulianEventsCheckBox") is CheckBox showJulian)
+                showJulian.IsChecked = vm.ShowJulianEvents;
+
+            if (FindName("ShowBiblicalEventsCheckBox") is CheckBox showBiblical)
+                showBiblical.IsChecked = vm.ShowBiblicalEvents;
+
+            Console.WriteLine("[SettingsPage] PopulateTab1Controls — done");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[SettingsPage] PopulateTab1Controls error: {ex.Message}");
         }
     }
 

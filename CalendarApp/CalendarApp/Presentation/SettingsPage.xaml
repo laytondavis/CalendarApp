@@ -55,7 +55,8 @@
                             <TextBlock Text="Choose the app's color scheme"
                                        Style="{StaticResource CaptionTextBlockStyle}"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            <ComboBox SelectedIndex="{Binding SelectedThemeIndex, Mode=TwoWay}"
+                            <ComboBox x:Name="ThemeComboBox"
+                                      SelectedIndex="{Binding SelectedThemeIndex, Mode=TwoWay}"
                                       HorizontalAlignment="Stretch"
                                       MinWidth="250"
                                       Margin="0,4,0,0">
@@ -71,7 +72,8 @@
 
                         <!-- Default Calendar Mode -->
                         <StackPanel Spacing="4">
-                            <CheckBox IsChecked="{Binding UseLastSelectedCalendarType, Mode=TwoWay}"
+                            <CheckBox x:Name="UseLastCalTypeCheckBox"
+                                      IsChecked="{Binding UseLastSelectedCalendarType, Mode=TwoWay}"
                                       Content="Use last selected calendar type"
                                       Margin="0,0,0,4" />
                             <TextBlock Text="When checked, switching calendar modes on the main screen will update the default. When unchecked, the default is set only here."
@@ -85,7 +87,8 @@
                             <TextBlock Text="Calendar system used when the app starts"
                                        Style="{StaticResource CaptionTextBlockStyle}"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            <ComboBox SelectedIndex="{Binding SelectedCalendarModeIndex, Mode=TwoWay}"
+                            <ComboBox x:Name="CalendarModeComboBox"
+                                      SelectedIndex="{Binding SelectedCalendarModeIndex, Mode=TwoWay}"
                                       IsEnabled="{Binding IsCalendarModeEditable}"
                                       HorizontalAlignment="Stretch"
                                       MinWidth="250"
@@ -99,7 +102,8 @@
                         <!-- Biblical Holidays -->
                         <StackPanel Spacing="4">
                             <TextBlock Text="Biblical Holidays" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                            <CheckBox IsChecked="{Binding ShowBiblicalHolidays, Mode=TwoWay}"
+                            <CheckBox x:Name="ShowBiblicalHolidaysCheckBox"
+                                      IsChecked="{Binding ShowBiblicalHolidays, Mode=TwoWay}"
                                       Content="Show Biblical holy days on Gregorian and Julian calendars"
                                       Margin="0,4,0,0" />
                             <TextBlock Text="When enabled, Biblical holy days (Passover, Pentecost, Trumpets, etc.) appear on all calendar views with an amber border. On midnight-based calendars a note shows the sunset time when each day begins."
@@ -115,13 +119,16 @@
                                        Style="{StaticResource CaptionTextBlockStyle}"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        TextWrapping="Wrap" />
-                            <CheckBox IsChecked="{Binding ShowGregorianEvents, Mode=TwoWay}"
+                            <CheckBox x:Name="ShowGregorianEventsCheckBox"
+                                      IsChecked="{Binding ShowGregorianEvents, Mode=TwoWay}"
                                       Content="Gregorian calendar events"
                                       Margin="0,4,0,0" />
-                            <CheckBox IsChecked="{Binding ShowJulianEvents, Mode=TwoWay}"
+                            <CheckBox x:Name="ShowJulianEventsCheckBox"
+                                      IsChecked="{Binding ShowJulianEvents, Mode=TwoWay}"
                                       Content="Julian calendar events"
                                       Margin="0,2,0,0" />
-                            <CheckBox IsChecked="{Binding ShowBiblicalEvents, Mode=TwoWay}"
+                            <CheckBox x:Name="ShowBiblicalEventsCheckBox"
+                                      IsChecked="{Binding ShowBiblicalEvents, Mode=TwoWay}"
                                       Content="Biblical calendar events"
                                       Margin="0,2,0,0" />
                         </StackPanel>
@@ -132,7 +139,8 @@
                             <TextBlock Text="How sunset, lunar phases, and equinox dates are calculated"
                                        Style="{StaticResource CaptionTextBlockStyle}"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            <ComboBox SelectedIndex="{Binding SelectedAstronomyModeIndex, Mode=TwoWay}"
+                            <ComboBox x:Name="AstronomyModeComboBox"
+                                      SelectedIndex="{Binding SelectedAstronomyModeIndex, Mode=TwoWay}"
                                       HorizontalAlignment="Stretch"
                                       MinWidth="250"
                                       Margin="0,4,0,0">
