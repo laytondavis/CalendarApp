@@ -264,6 +264,21 @@ jobs:
           }
           echo "APK_PATH=$($apk.FullName)" >> $env:GITHUB_OUTPUT
 
+      - name: Verify APK signing certificate
+        shell: pwsh
+        run: |
+          $apk = "${{ steps.find_apk.outputs.APK_PATH }}"
+          Write-Host "APK: $apk"
+          # Use keytool to print the signing certificate fingerprint
+          & keytool -printcert -jarfile "$apk" 2>&1 | ForEach-Object { Write-Host $_ }
+          # Also show the versionCode and versionName from aapt
+          $aapt = Get-ChildItem -Path "$env:ANDROID_HOME/build-tools" -Filter "aapt.exe" -Recurse | Select-Object -Last 1
+          if ($aapt) {
+            & $aapt.FullName dump badging "$apk" 2>&1 | Select-String "versionCode|versionName" | ForEach-Object { Write-Host $_ }
+          } else {
+            Write-Host "aapt not found — skipping version dump"
+          }
+
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
