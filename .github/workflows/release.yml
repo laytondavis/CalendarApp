@@ -138,6 +138,16 @@ jobs:
             --outputDir   releases/windows `
             --mainExe     CalendarApp.exe
 
+      - name: Verify Velopack output
+        shell: pwsh
+        run: |
+          Write-Host "Contents of releases/windows:"
+          if (Test-Path "releases/windows") {
+            Get-ChildItem "releases/windows" -Recurse | ForEach-Object { Write-Host "  $_" }
+          } else {
+            Write-Error "releases/windows directory not found!"
+          }
+
       - name: Upload Windows release files
         uses: actions/upload-artifact@v4
         with:
@@ -264,6 +274,17 @@ jobs:
         with:
           name: windows-release
           path: artifacts/windows
+
+      - name: Verify Windows artifacts
+        shell: bash
+        run: |
+          echo "Contents of artifacts/windows:"
+          if [ -d "artifacts/windows" ]; then
+            ls -lah artifacts/windows/
+          else
+            echo "ERROR: artifacts/windows not found!"
+            exit 1
+          fi
 
       - name: Download Android APK
         uses: actions/download-artifact@v4
