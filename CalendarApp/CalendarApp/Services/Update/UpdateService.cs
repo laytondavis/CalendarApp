@@ -83,11 +83,14 @@ public class UpdateService : IUpdateService
             var updateInfo = await _manager.CheckForUpdatesAsync();
             if (updateInfo == null)
             {
-                Console.WriteLine("[UpdateService] Already up to date.");
+                Console.WriteLine("[UpdateService] Already up to date (null updateInfo).");
                 return false;
             }
 
             NewVersionString  = updateInfo.TargetFullRelease.Version.ToString();
+            var currentVersion = updateInfo.CurrentVersion?.ToString() ?? "unknown";
+            Console.WriteLine($"[UpdateService] Current={currentVersion}  Remote={NewVersionString}");
+
             IsUpdateAvailable = true;
             Console.WriteLine($"[UpdateService] Update found: v{NewVersionString} — downloading...");
 
