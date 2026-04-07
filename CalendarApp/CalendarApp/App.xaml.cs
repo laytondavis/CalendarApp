@@ -276,8 +276,11 @@ public partial class App : Application
             {
                 Console.WriteLine($"[CalendarApp] Could not load credentials.json from Android assets: {ex.Message}");
             }
-#elif __SKIA__
-            // Search for credentials.json in multiple locations
+#else
+            // Search for credentials.json in the app directory and parent directories.
+            // This works for Velopack installs (app runs from current/ subfolder) and
+            // direct runs alike. Not gated on __SKIA__ so it works regardless of
+            // which preprocessor symbols the SDK defines for the desktop target.
             Console.WriteLine($"[CalendarApp] Searching for credentials.json starting from: {AppContext.BaseDirectory}");
 
             var searchPaths = new List<string>();
@@ -309,12 +312,9 @@ public partial class App : Application
             }
 
             // If we reach here, credentials.json was not found in any location.
-            // This is expected when the CI secret was not set during the build.
             Console.WriteLine("[CalendarApp] ✗ credentials.json not found in any directory above app.");
             Console.WriteLine($"[CalendarApp] Expected to install to: {destPath}");
             Console.WriteLine("[CalendarApp] Verify: GOOGLE_CREDENTIALS_JSON_BASE64 secret is set on GitHub Actions.");
-            await Task.CompletedTask;
-#else
             await Task.CompletedTask;
 #endif
         }
