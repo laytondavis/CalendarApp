@@ -7,22 +7,17 @@ public sealed partial class SettingsPage : Page
     public SettingsPage()
     {
         this.InitializeComponent();
-        this.Loaded += OnPageLoaded;
+        this.DataContextChanged += OnDataContextChanged;
     }
 
-    private async void OnPageLoaded(object sender, RoutedEventArgs e)
+    private async void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
     {
-        Console.WriteLine($"[SettingsPage] Loaded fired. DataContext type: {DataContext?.GetType().Name ?? "null"}");
-        Console.WriteLine($"[SettingsPage] TabView SelectedIndex before: {SettingsTabView.SelectedIndex}");
-
-        if (DataContext is SettingsViewModel vm)
+        if (args.NewValue is SettingsViewModel vm)
         {
-            // Await the settings load so properties are set before we proceed
+            Console.WriteLine("[SettingsPage] DataContextChanged — loading settings from DB");
             await vm.LoadSettingsFromDbAsync();
-            Console.WriteLine($"[SettingsPage] LoadSettingsFromDbAsync completed. ThemeIndex={vm.SelectedThemeIndex}, CalMode={vm.SelectedCalendarModeIndex}");
+            Console.WriteLine($"[SettingsPage] Settings loaded. ThemeIndex={vm.SelectedThemeIndex}, CalMode={vm.SelectedCalendarModeIndex}");
         }
-
-        Console.WriteLine($"[SettingsPage] TabView SelectedIndex after: {SettingsTabView.SelectedIndex}");
     }
 
     /// <summary>
