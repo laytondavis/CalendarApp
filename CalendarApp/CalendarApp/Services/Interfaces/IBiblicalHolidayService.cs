@@ -20,5 +20,5 @@ public interface IBiblicalHolidayService
     /// Adjacent Biblical years are checked so that boundary months (Jan–Mar, Dec)
     /// are handled correctly.
     /// </summary>
-    Task<Dictionary<DateTime, string>> GetHolidayDisplaysForRangeAsync(DateTime start, DateTime end);
+    Task<Dictionary<DateTime, List<string>>> GetHolidayDisplaysForRangeAsync(DateTime start, DateTime end);
 }

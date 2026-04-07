@@ -147,7 +147,7 @@ public partial class MainViewModel : ObservableObject
     private string? _dayViewAstronomicalEventDisplay;
 
     [ObservableProperty]
-    private string? _dayViewHolidayDisplay;
+    private List<string> _dayViewHolidayDisplays = new();
 
     // Year jump input
     [ObservableProperty]
@@ -828,7 +828,7 @@ public partial class MainViewModel : ObservableObject
                 ? evts.Select(e => MakeEventVm(e)).ToList()
                 : new List<CalendarEventViewModel>();
 
-            holidays.TryGetValue(date.GregorianEquivalent.Date, out var holidayName);
+            holidays.TryGetValue(date.GregorianEquivalent.Date, out var holidayNames);
 
             dayViewModels.Add(new CalendarDayViewModel
             {
@@ -843,7 +843,7 @@ public partial class MainViewModel : ObservableObject
                 DayStartDisplay = CurrentCalendarMode == CalendarMode.Biblical
                     ? GetBiblicalDayStartDisplay(date.GregorianEquivalent, compact: true) : null,
                 AstronomicalEventDisplay = GetAstronomicalEventDisplay(date.GregorianEquivalent),
-                HolidayDisplay = holidayName,
+                HolidayDisplays = holidayNames ?? new List<string>(),
                 Events = new ObservableCollection<CalendarEventViewModel>(dayEvents)
             });
         }
@@ -912,7 +912,7 @@ public partial class MainViewModel : ObservableObject
 
             var allDayEvents = dayVms.Where(vm => vm.IsAllDay).ToList();
 
-            holidays.TryGetValue(date.GregorianEquivalent.Date, out var weekHolidayName);
+            holidays.TryGetValue(date.GregorianEquivalent.Date, out var weekHolidayNames);
             columns.Add(new WeekDayColumnViewModel
             {
                 CalendarDate = date,
@@ -926,7 +926,7 @@ public partial class MainViewModel : ObservableObject
                 DayStartDisplay = CurrentCalendarMode == CalendarMode.Biblical
                     ? GetBiblicalDayStartDisplay(date.GregorianEquivalent, compact: true) : null,
                 AstronomicalEventDisplay = GetAstronomicalEventDisplay(date.GregorianEquivalent),
-                HolidayDisplay = weekHolidayName,
+                HolidayDisplays = weekHolidayNames ?? new List<string>(),
                 AllDayEvents = new ObservableCollection<CalendarEventViewModel>(allDayEvents),
                 HourSlots = hours
             });
@@ -981,8 +981,8 @@ public partial class MainViewModel : ObservableObject
             ? GetBiblicalDayStartDisplay(DisplayDate) : null;
         DayViewAstronomicalEventDisplay = GetAstronomicalEventDisplay(DisplayDate);
         var dayHolidays = await GetBiblicalHolidaysForRangeAsync(startOfDay, endOfDay);
-        dayHolidays.TryGetValue(startOfDay, out var dayHolName);
-        DayViewHolidayDisplay = dayHolName;
+        dayHolidays.TryGetValue(startOfDay, out var dayHolNames);
+        DayViewHolidayDisplays = dayHolNames ?? new List<string>();
     }
 
     // ========== YEAR VIEW ==========
@@ -1067,7 +1067,7 @@ public partial class MainViewModel : ObservableObject
             {
                 var dayDate = firstDay.GregorianEquivalent.AddDays(d - 1);
                 astroEvents.TryGetValue(dayDate.Date, out var astroName);
-                yearHolidays.TryGetValue(dayDate.Date, out var miniHolName);
+                yearHolidays.TryGetValue(dayDate.Date, out var miniHolNames);
                 miniDays.Add(new MiniDayViewModel
                 {
                     Day = d,
@@ -1077,8 +1077,8 @@ public partial class MainViewModel : ObservableObject
                     IsBlank = false,
                     IsAstronomicalEvent = astroName != null,
                     AstronomicalEventName = astroName,
-                    IsHoliday = miniHolName != null,
-                    HolidayName = miniHolName
+                    IsHoliday = miniHolNames != null && miniHolNames.Count > 0,
+                    HolidayName = miniHolNames != null && miniHolNames.Count > 0 ? string.Join(", ", miniHolNames) : null
                 });
             }
 
@@ -1121,7 +1121,7 @@ public partial class MainViewModel : ObservableObject
                 var dayName = date.ToString("dddd");
                 var monthName = _calendarService.GetMonthName(calDate.Month);
                 var dayEvents = eventsByDate.TryGetValue(date, out var evts) ? evts : new List<CalendarEvent>();
-                holidays.TryGetValue(date, out var agendaHolName);
+                holidays.TryGetValue(date, out var agendaHolNames);
                 return new AgendaGroupViewModel
                 {
                     Date = date,
@@ -1133,7 +1133,7 @@ public partial class MainViewModel : ObservableObject
                     DayStartDisplay = CurrentCalendarMode == CalendarMode.Biblical
                         ? GetBiblicalDayStartDisplay(date) : null,
                     AstronomicalEventDisplay = GetAstronomicalEventDisplay(date),
-                    HolidayDisplay = agendaHolName,
+                    HolidayDisplays = agendaHolNames ?? new List<string>(),
                     Events = new ObservableCollection<CalendarEventViewModel>(
                         dayEvents.Select(e => MakeEventVm(e)))
                 };
@@ -1350,10 +1350,10 @@ public partial class MainViewModel : ObservableObject
     /// also adds an "Eve of X" entry for the day preceding each holy day, unless that
     /// preceding day already carries a holy day of its own.
     /// </summary>
-    private async Task<Dictionary<DateTime, string>> GetBiblicalHolidaysForRangeAsync(DateTime start, DateTime end)
+    private async Task<Dictionary<DateTime, List<string>>> GetBiblicalHolidaysForRangeAsync(DateTime start, DateTime end)
     {
         if (CurrentCalendarMode != CalendarMode.Biblical && !ShowBiblicalHolidays)
-            return new Dictionary<DateTime, string>();
+            return new Dictionary<DateTime, List<string>>();
 
         try
         {
@@ -1362,26 +1362,23 @@ public partial class MainViewModel : ObservableObject
             // On midnight-based calendars, prepend an "Eve of X" day before each holy day.
             if (CurrentCalendarMode != CalendarMode.Biblical)
             {
-                var eveEntries = new Dictionary<DateTime, string>();
+                var eveEntries = new Dictionary<DateTime, List<string>>();
                 foreach (var kvp in holidays)
                 {
                     var eve = kvp.Key.AddDays(-1);
-                    // Only add eve if there's no existing holiday on the eve day
                     if (!holidays.ContainsKey(eve))
                     {
-                        var eveDisplay = $"Eve of {kvp.Value}";
-                        if (eveEntries.ContainsKey(eve))
-                            eveEntries[eve] += "\n" + eveDisplay;  // Multiple eves on same day → concatenate
-                        else
-                            eveEntries[eve] = eveDisplay;
+                        if (!eveEntries.ContainsKey(eve))
+                            eveEntries[eve] = new List<string>();
+                        foreach (var name in kvp.Value)
+                            eveEntries[eve].Add($"Eve of {name}");
                     }
                 }
                 foreach (var kvp in eveEntries)
                 {
-                    if (holidays.ContainsKey(kvp.Key))
-                        holidays[kvp.Key] += "\n" + kvp.Value;  // Concatenate with existing holiday
-                    else
-                        holidays[kvp.Key] = kvp.Value;
+                    if (!holidays.ContainsKey(kvp.Key))
+                        holidays[kvp.Key] = new List<string>();
+                    holidays[kvp.Key].AddRange(kvp.Value);
                 }
             }
 
@@ -1390,7 +1387,7 @@ public partial class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             Console.WriteLine($"[CalendarApp] Error computing Biblical holidays: {ex.Message}");
-            return new Dictionary<DateTime, string>();
+            return new Dictionary<DateTime, List<string>>();
         }
     }
 
@@ -1877,8 +1874,8 @@ public partial class CalendarDayViewModel : ObservableObject
     public bool HasDayStartDisplay => !string.IsNullOrEmpty(DayStartDisplay);
     public string? AstronomicalEventDisplay { get; set; }
     public bool HasAstronomicalEventDisplay => !string.IsNullOrEmpty(AstronomicalEventDisplay);
-    public string? HolidayDisplay { get; set; }
-    public bool HasHolidayDisplay => !string.IsNullOrEmpty(HolidayDisplay);
+    public List<string> HolidayDisplays { get; set; } = new();
+    public bool HasHolidayDisplay => HolidayDisplays.Count > 0;
     public ObservableCollection<CalendarEventViewModel> Events { get; set; } = new();
     public bool HasEvents => Events.Count > 0;
 }
@@ -1903,8 +1900,8 @@ public class WeekDayColumnViewModel
     public bool HasDayStartDisplay => !string.IsNullOrEmpty(DayStartDisplay);
     public string? AstronomicalEventDisplay { get; set; }
     public bool HasAstronomicalEventDisplay => !string.IsNullOrEmpty(AstronomicalEventDisplay);
-    public string? HolidayDisplay { get; set; }
-    public bool HasHolidayDisplay => !string.IsNullOrEmpty(HolidayDisplay);
+    public List<string> HolidayDisplays { get; set; } = new();
+    public bool HasHolidayDisplay => HolidayDisplays.Count > 0;
     public ObservableCollection<CalendarEventViewModel> AllDayEvents { get; set; } = new();
     public ObservableCollection<HourSlotViewModel> HourSlots { get; set; } = new();
 }
@@ -1965,8 +1962,8 @@ public class AgendaGroupViewModel
     public bool HasDayStartDisplay => !string.IsNullOrEmpty(DayStartDisplay);
     public string? AstronomicalEventDisplay { get; set; }
     public bool HasAstronomicalEventDisplay => !string.IsNullOrEmpty(AstronomicalEventDisplay);
-    public string? HolidayDisplay { get; set; }
-    public bool HasHolidayDisplay => !string.IsNullOrEmpty(HolidayDisplay);
+    public List<string> HolidayDisplays { get; set; } = new();
+    public bool HasHolidayDisplay => HolidayDisplays.Count > 0;
     public ObservableCollection<CalendarEventViewModel> Events { get; set; } = new();
     public bool HasEvents => Events.Count > 0;
     public string NoEventsText => "No events";

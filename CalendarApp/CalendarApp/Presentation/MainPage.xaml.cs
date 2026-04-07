@@ -217,7 +217,7 @@ public sealed partial class MainPage : Page
             });
         }
 
-        if (day.HasHolidayDisplay)
+        foreach (var holName in day.HolidayDisplays)
         {
             infoPanel.Children.Add(new Border
             {
@@ -229,7 +229,7 @@ public sealed partial class MainPage : Page
                 Margin = new Thickness(0, 2, 0, 0),
                 Child = new TextBlock
                 {
-                    Text = day.HolidayDisplay ?? "",
+                    Text = holName,
                     FontSize = 9,
                     Foreground = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 200, 130, 0)),
                     FontWeight = new Windows.UI.Text.FontWeight { Weight = 600 },

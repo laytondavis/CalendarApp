@@ -35,9 +35,9 @@ public class BiblicalHolidayService : IBiblicalHolidayService
         return await Task.Run(() => ComputeHolidays(gregorianYear, location));
     }
 
-    public async Task<Dictionary<DateTime, string>> GetHolidayDisplaysForRangeAsync(DateTime start, DateTime end)
+    public async Task<Dictionary<DateTime, List<string>>> GetHolidayDisplaysForRangeAsync(DateTime start, DateTime end)
     {
-        var result = new Dictionary<DateTime, string>();
+        var result = new Dictionary<DateTime, List<string>>();
 
         // Check adjacent Gregorian years: the Biblical year starting in spring of year G
         // produces holidays from March–October of year G.  Year G-1 is checked so that
@@ -55,10 +55,9 @@ public class BiblicalHolidayService : IBiblicalHolidayService
                 if (h.GregorianDate.Date >= start.Date && h.GregorianDate.Date <= end.Date)
                 {
                     var dateKey = h.GregorianDate.Date;
-                    if (result.ContainsKey(dateKey))
-                        result[dateKey] += "\n" + h.Name;  // Multiple holidays on same day → separate lines
-                    else
-                        result[dateKey] = h.Name;
+                    if (!result.ContainsKey(dateKey))
+                        result[dateKey] = new List<string>();
+                    result[dateKey].Add(h.Name);
                 }
             }
         }

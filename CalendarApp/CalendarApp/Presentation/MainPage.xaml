@@ -273,22 +273,28 @@
                                                Visibility="{x:Bind HasAstronomicalEventDisplay, Converter={StaticResource BoolToVisibilityConverter}}"
                                                FontSize="9"
                                                FontWeight="SemiBold" />
-                                    <Border Background="#28C88200"
-                                            BorderBrush="#FFC88200"
-                                            BorderThickness="1"
-                                            CornerRadius="3"
-                                            Padding="4,2"
-                                            Margin="0,2,0,0"
-                                            HorizontalAlignment="Center"
-                                            Visibility="{x:Bind HasHolidayDisplay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                        <TextBlock Text="{x:Bind HolidayDisplay}"
-                                                   HorizontalAlignment="Center"
-                                                   Foreground="#FFC88200"
-                                                   FontSize="9"
-                                                   FontWeight="SemiBold"
-                                                   TextTrimming="CharacterEllipsis"
-                                                   MaxLines="1" />
-                                    </Border>
+                                    <ItemsControl ItemsSource="{x:Bind HolidayDisplays}"
+                                                    Visibility="{x:Bind HasHolidayDisplay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="x:String">
+                                                <Border Background="#28C88200"
+                                                        BorderBrush="#FFC88200"
+                                                        BorderThickness="1"
+                                                        CornerRadius="3"
+                                                        Padding="4,2"
+                                                        Margin="0,1,0,0"
+                                                        HorizontalAlignment="Center">
+                                                    <TextBlock Text="{x:Bind}"
+                                                               HorizontalAlignment="Center"
+                                                               Foreground="#FFC88200"
+                                                               FontSize="9"
+                                                               FontWeight="SemiBold"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               MaxLines="1" />
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
                                 </StackPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -377,18 +383,24 @@
                            HorizontalAlignment="Center"
                            FontWeight="SemiBold"
                            Visibility="{Binding DayViewAstronomicalEventDisplay, Converter={StaticResource NullToVisibilityConverter}}" />
-                <Border Background="#28C88200"
-                        BorderBrush="#FFC88200"
-                        BorderThickness="1"
-                        CornerRadius="4"
-                        Padding="8,4"
-                        HorizontalAlignment="Center"
-                        Visibility="{Binding DayViewHolidayDisplay, Converter={StaticResource NullToVisibilityConverter}}">
-                    <TextBlock Text="{Binding DayViewHolidayDisplay}"
-                               Foreground="#FFC88200"
-                               HorizontalAlignment="Center"
-                               FontWeight="SemiBold" />
-                </Border>
+                <ItemsControl ItemsSource="{Binding DayViewHolidayDisplays}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <Border Background="#28C88200"
+                                    BorderBrush="#FFC88200"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Padding="8,4"
+                                    Margin="0,2,0,0"
+                                    HorizontalAlignment="Center">
+                                <TextBlock Text="{x:Bind}"
+                                           Foreground="#FFC88200"
+                                           HorizontalAlignment="Center"
+                                           FontWeight="SemiBold" />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </StackPanel>
 
             <!-- Hour Slots -->
@@ -523,18 +535,24 @@
                                                    Foreground="#FF00A078"
                                                    FontWeight="SemiBold"
                                                    Visibility="{x:Bind HasAstronomicalEventDisplay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                        <Border Background="#28C88200"
-                                                BorderBrush="#FFC88200"
-                                                BorderThickness="1"
-                                                CornerRadius="3"
-                                                Padding="6,3"
-                                                Margin="0,2,0,0"
-                                                Visibility="{x:Bind HasHolidayDisplay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                            <TextBlock Text="{x:Bind HolidayDisplay}"
-                                                       Foreground="#FFC88200"
-                                                       FontWeight="SemiBold"
-                                                       Style="{StaticResource CaptionTextBlockStyle}" />
-                                        </Border>
+                                        <ItemsControl ItemsSource="{x:Bind HolidayDisplays}"
+                                                        Visibility="{x:Bind HasHolidayDisplay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="x:String">
+                                                    <Border Background="#28C88200"
+                                                            BorderBrush="#FFC88200"
+                                                            BorderThickness="1"
+                                                            CornerRadius="3"
+                                                            Padding="6,3"
+                                                            Margin="0,1,0,0">
+                                                        <TextBlock Text="{x:Bind}"
+                                                                   Foreground="#FFC88200"
+                                                                   FontWeight="SemiBold"
+                                                                   Style="{StaticResource CaptionTextBlockStyle}" />
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
                                     </StackPanel>
                                     <Border Grid.Column="1"
                                             Background="{ThemeResource PrimaryBrush}"
