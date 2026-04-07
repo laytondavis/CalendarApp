@@ -325,7 +325,7 @@ public class GoogleAuthService : IGoogleAuthService
         var secrets = LoadSecretsFromFile(appDataPath);
         if (secrets != null) return secrets;
 
-#if __SKIA__
+#if !__ANDROID__
         // 3. Desktop fallback: read directly from the app's install/run directory.
         //    Velopack installs the app with credentials.json alongside the executable;
         //    if the AppData copy hasn't happened yet, this keeps sign-in working.

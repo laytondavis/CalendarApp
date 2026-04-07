@@ -2,7 +2,7 @@ using System.Text.Json;
 using CalendarApp.Models;
 using CalendarApp.Services.Interfaces;
 using Microsoft.Extensions.Options;
-#if __SKIA__
+#if !__ANDROID__
 using Velopack;
 using Velopack.Sources;
 #endif
@@ -14,7 +14,7 @@ public class UpdateService : IUpdateService
     private readonly string _githubRepo;
     private readonly HttpClient _httpClient;
 
-#if __SKIA__
+#if !__ANDROID__
     private UpdateInfo? _pendingUpdate;
     private UpdateManager? _manager;
 #endif
@@ -38,19 +38,16 @@ public class UpdateService : IUpdateService
 
     public async Task<bool> CheckAndDownloadAsync(IProgress<int>? progress = null)
     {
-#if __SKIA__
-        return await CheckVelopackAsync(progress);
-#elif __ANDROID__
+#if __ANDROID__
         return await CheckGitHubApiAsync();
 #else
-        await Task.CompletedTask;
-        return false;
+        return await CheckVelopackAsync(progress);
 #endif
     }
 
     public void ApplyAndRestart()
     {
-#if __SKIA__
+#if !__ANDROID__
         if (_manager == null || _pendingUpdate == null)
         {
             Console.WriteLine("[UpdateService] ApplyAndRestart called but no update is pending.");
@@ -67,7 +64,7 @@ public class UpdateService : IUpdateService
 #endif
     }
 
-#if __SKIA__
+#if !__ANDROID__
     private async Task<bool> CheckVelopackAsync(IProgress<int>? progress)
     {
         if (string.IsNullOrWhiteSpace(_githubRepo) || _githubRepo.Contains("YOUR_USERNAME"))
@@ -86,22 +83,11 @@ public class UpdateService : IUpdateService
 
             if (updateInfo == null)
             {
-                // Null means no update found. Log what version we think we're at.
-                try
-                {
-                    var currentInfo = await _manager.GetInformationAsync();
-                    var currentVer = currentInfo?.CurrentVersion?.ToString() ?? "unknown";
-                    Console.WriteLine($"[UpdateService] Current installed version: {currentVer}");
-                    Console.WriteLine($"[UpdateService] No update available – you are up to date.");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[UpdateService] Could not read current version: {ex.Message}");
-                }
+                Console.WriteLine($"[UpdateService] No update available – you are up to date.");
                 return false;
             }
 
-            var currentVer2 = updateInfo.CurrentVersion?.ToString() ?? "unknown";
+            var currentVer2 = _manager.CurrentVersion?.ToString() ?? "unknown";
             var remoteVer = updateInfo.TargetFullRelease.Version.ToString();
             Console.WriteLine($"[UpdateService] Current={currentVer2}  Remote={remoteVer}");
 
