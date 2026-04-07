@@ -1363,7 +1363,12 @@ public partial class MainViewModel : ObservableObject
                     }
                 }
                 foreach (var kvp in eveEntries)
-                    holidays[kvp.Key] = kvp.Value;
+                {
+                    if (holidays.ContainsKey(kvp.Key))
+                        holidays[kvp.Key] += " • " + kvp.Value;  // Concatenate with existing holiday
+                    else
+                        holidays[kvp.Key] = kvp.Value;
+                }
             }
 
             return holidays;
