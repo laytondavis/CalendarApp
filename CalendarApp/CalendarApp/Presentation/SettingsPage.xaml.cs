@@ -10,78 +10,14 @@ public sealed partial class SettingsPage : Page
     }
 
     /// <summary>
-    /// Forces the first tab's content into the visual tree by briefly switching
-    /// away and back. But first, ensure settings are fully loaded from the database.
-    /// Uno Platform's TabView is lazy: even though the first tab is selected by default,
-    /// its content may not be fully realized until a SelectionChanged event occurs.
-    /// </summary>
-    private bool _initialLoadDone;
-
-    private async void OnTabViewLoaded(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is not SettingsViewModel vm) return;
-
-        try
-        {
-            // Load settings from database before any tab content is shown
-            await vm.LoadSettingsAndWaitAsync();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[CalendarApp] Error in OnTabViewLoaded: {ex}");
-        }
-
-        // Force Uno to re-realize the first tab content now that data is loaded.
-        // We swap to tab 1, yield a frame, then swap back.
-        await ForceTabRefreshAsync();
-        _initialLoadDone = true;
-    }
-
-    /// <summary>
-    /// Called each time Settings is navigated to. On re-entry the TabView is
-    /// already loaded so OnTabViewLoaded won't fire again — refresh here instead.
-    /// </summary>
-    internal async void OnSettingsNavigatedTo()
-    {
-        if (!_initialLoadDone) return; // first load is handled by OnTabViewLoaded
-
-        if (DataContext is SettingsViewModel vm)
-        {
-            try
-            {
-                await vm.LoadSettingsAndWaitAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[CalendarApp] Error reloading settings: {ex}");
-            }
-        }
-        await ForceTabRefreshAsync();
-    }
-
-    private async Task ForceTabRefreshAsync()
-    {
-        var current = SettingsTabView.SelectedIndex;
-        SettingsTabView.SelectedIndex = current == 0 ? 1 : 0;
-        // Yield a frame so Uno processes the SelectionChanged
-        var tcs = new TaskCompletionSource();
-        DispatcherQueue.TryEnqueue(() => tcs.SetResult());
-        await tcs.Task;
-        SettingsTabView.SelectedIndex = current;
-    }
-
-    /// <summary>
     /// Fires every time Settings becomes the active page.
-    /// Calls OnNavigatedToSettings (which initializes location service, etc.)
-    /// but actual settings DB loading is deferred to OnTabViewLoaded to avoid
-    /// rendering the page before data is available.
+    /// Loads settings from DB so the UI is populated.
     /// </summary>
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
         if (DataContext is SettingsViewModel vm)
             vm.OnNavigatedToSettings();
-        OnSettingsNavigatedTo();
     }
 
     /// <summary>

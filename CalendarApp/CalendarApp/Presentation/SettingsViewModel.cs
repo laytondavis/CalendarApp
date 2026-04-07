@@ -249,9 +249,7 @@ public partial class SettingsViewModel : ObservableObject
                 : $"Version {_updateService.NewVersionString} is available.";
         }
 
-        // Settings are loaded by LoadSettingsAndWaitAsync() called from
-        // SettingsPage.OnTabViewLoaded, ensuring data is ready before the
-        // tab content is realized.
+        _ = LoadSettingsAsync();
     }
 
     public ICommand GoBackCommand { get; }
@@ -337,7 +335,6 @@ public partial class SettingsViewModel : ObservableObject
         }
         finally
         {
-            await Task.Delay(500);
             _isLoading = false;
             Console.WriteLine("[CalendarApp] Settings load complete, saves now enabled");
         }
@@ -934,17 +931,6 @@ public partial class SettingsViewModel : ObservableObject
         _settingsClosedMessageSent = false;
         _googleCalendarSelectionChanged = false;
         _ = LoadSettingsAsync();
-    }
-
-    /// <summary>
-    /// Loads settings and waits for the load to complete (including the 500ms cool-down).
-    /// Used by SettingsPage to coordinate UI updates after settings are loaded.
-    /// </summary>
-    public async Task LoadSettingsAndWaitAsync()
-    {
-        _settingsClosedMessageSent = false;
-        _googleCalendarSelectionChanged = false;
-        await LoadSettingsAsync();
     }
 
     /// <summary>

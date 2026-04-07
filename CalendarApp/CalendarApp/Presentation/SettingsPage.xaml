@@ -40,7 +40,7 @@
                  Grid.Row="1"
                  IsAddTabButtonVisible="False"
                  TabWidthMode="Equal"
-                 Loaded="OnTabViewLoaded">
+                 SelectedIndex="0">
 
             <!-- ══════════════════════════════════════════════════
                  TAB 1 — VISUAL DISPLAY &amp; CALCULATIONS
