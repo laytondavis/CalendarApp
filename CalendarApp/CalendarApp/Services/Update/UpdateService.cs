@@ -82,7 +82,7 @@ public class UpdateService : IUpdateService
             _manager = new UpdateManager(new GithubSource(_githubRepo, null, false));
 
             var updateInfo = await _manager.CheckForUpdatesAsync();
-            Console.WriteLine($"[UpdateService] CheckForUpdatesAsync returned: {(updateInfo == null ? "null" : "UpdateInfo")}");
+            Console.WriteLine($"[UpdateService] CheckForUpdatesAsync returned: {(updateInfo == null ? "null (no update)" : "UpdateInfo (update available)")}");
 
             if (updateInfo == null)
             {
@@ -90,19 +90,20 @@ public class UpdateService : IUpdateService
                 try
                 {
                     var currentInfo = await _manager.GetInformationAsync();
-                    Console.WriteLine($"[UpdateService] Current installed version: {currentInfo?.CurrentVersion?.ToString() ?? "unknown"}");
+                    var currentVer = currentInfo?.CurrentVersion?.ToString() ?? "unknown";
+                    Console.WriteLine($"[UpdateService] Current installed version: {currentVer}");
+                    Console.WriteLine($"[UpdateService] No update available – you are up to date.");
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"[UpdateService] Could not read current version: {ex.Message}");
                 }
-                Console.WriteLine("[UpdateService] No update available (already up to date or version check failed).");
                 return false;
             }
 
-            var currentVer = updateInfo.CurrentVersion?.ToString() ?? "unknown";
+            var currentVer2 = updateInfo.CurrentVersion?.ToString() ?? "unknown";
             var remoteVer = updateInfo.TargetFullRelease.Version.ToString();
-            Console.WriteLine($"[UpdateService] Current={currentVer}  Remote={remoteVer}");
+            Console.WriteLine($"[UpdateService] Current={currentVer2}  Remote={remoteVer}");
 
             NewVersionString  = remoteVer;
             IsUpdateAvailable = true;
@@ -117,7 +118,8 @@ public class UpdateService : IUpdateService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[UpdateService] Check/download failed: {ex.Message}\n{ex.StackTrace}");
+            Console.WriteLine($"[UpdateService] Check/download failed: {ex.Message}");
+            Console.WriteLine($"[UpdateService] Stack trace: {ex.StackTrace}");
             return false;
         }
     }
