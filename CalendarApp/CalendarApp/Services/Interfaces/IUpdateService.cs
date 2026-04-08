@@ -4,15 +4,13 @@ public interface IUpdateService
 {
     /// <summary>
     /// True when a newer version has been found (on any platform).
-    /// On desktop this also means the update has been downloaded by Velopack.
-    /// On Android this means the GitHub releases page is available for the user to download from.
     /// </summary>
     bool IsUpdateAvailable { get; }
 
     /// <summary>
-    /// True only on desktop after Velopack has fully downloaded the update and it is
-    /// ready to apply immediately via <see cref="ApplyAndRestart"/>.
-    /// Always false on Android.
+    /// True when the update has been downloaded and is ready to install.
+    /// On desktop: Velopack has downloaded the update.
+    /// On Android: the APK has been downloaded to local storage.
     /// </summary>
     bool IsUpdateReady { get; }
 
@@ -20,24 +18,41 @@ public interface IUpdateService
     string? NewVersionString { get; }
 
     /// <summary>
-    /// The GitHub releases page URL for this app.
-    /// Used on Android so the user can open the browser and download the APK manually.
+    /// The GitHub releases page URL for this app (fallback for manual download).
     /// </summary>
     string? ReleasesPageUrl { get; }
 
     /// <summary>
-    /// Checks for a newer version and, if found, downloads it (desktop) or records its
-    /// availability (Android/other).
-    /// Reports download progress (0–100) via <paramref name="progress"/> during the
-    /// Velopack download phase on desktop.
-    /// Returns true if an update was found.
+    /// True when the app was installed from an app store (Google Play, etc.)
+    /// and in-app update checking should be disabled.
+    /// </summary>
+    bool IsStoreInstall { get; }
+
+    /// <summary>
+    /// Checks for a newer version and, if found, downloads it.
+    /// On desktop: Velopack downloads the update.
+    /// On Android: downloads the APK file in the background.
+    /// Reports download progress (0–100) via <paramref name="progress"/>.
+    /// Returns true if an update was found and downloaded.
     /// </summary>
     Task<bool> CheckAndDownloadAsync(IProgress<int>? progress = null);
 
     /// <summary>
-    /// Applies the downloaded update and restarts the application immediately.
-    /// Only effective on desktop when <see cref="IsUpdateReady"/> is true.
-    /// No-op on Android/other platforms.
+    /// Applies the downloaded update.
+    /// On desktop: restarts the application with the new version.
+    /// On Android: launches the system package installer for the downloaded APK.
     /// </summary>
     void ApplyAndRestart();
+
+    /// <summary>
+    /// Starts the periodic background update checker.
+    /// First check after <paramref name="initialDelay"/>, then every <paramref name="interval"/>.
+    /// No-op if the app was installed from a store.
+    /// </summary>
+    void StartPeriodicChecks(TimeSpan initialDelay, TimeSpan interval);
+
+    /// <summary>
+    /// Stops the periodic background update checker.
+    /// </summary>
+    void StopPeriodicChecks();
 }

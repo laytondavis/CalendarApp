@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+  <!-- Grants access to app-specific external storage (Download directory)
+       where APK update files are saved by UpdateService -->
+  <external-files-path name="downloads" path="Download/" />
+</paths>

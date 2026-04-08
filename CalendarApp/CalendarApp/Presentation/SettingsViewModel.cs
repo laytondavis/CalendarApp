@@ -165,10 +165,21 @@ public partial class SettingsViewModel : ObservableObject
     private bool _isUpdateAvailable;
 
     /// <summary>
-    /// True when a newer version was found but NOT yet ready to install directly
-    /// (i.e. Android, where the user must download the APK from the releases page).
+    /// True when a newer version was found but NOT yet ready to install directly.
+    /// Only used as fallback — on Android, APK is now auto-downloaded.
     /// </summary>
     public bool IsDownloadLinkAvailable => IsUpdateAvailable && !IsUpdateReady;
+
+    /// <summary>
+    /// Button text for the install action — "Install Update" on Android,
+    /// "Restart &amp; Install Update" on desktop.
+    /// </summary>
+    public string InstallButtonText { get; } =
+#if __ANDROID__
+        "Install Update";
+#else
+        "Restart & Install Update";
+#endif
 
     [ObservableProperty]
     private bool _isCheckingForUpdates;
@@ -177,17 +188,11 @@ public partial class SettingsViewModel : ObservableObject
     private bool _isDownloadingUpdate;
 
     /// <summary>
-    /// True on desktop and Android (both have an update mechanism).
-    /// False only on WebAssembly where in-app updates are not applicable.
-    /// Note: __SKIA__ is NOT used here because it can be undefined on some
-    /// Uno SDK desktop configurations; instead we exclude only __BROWSERWASM__.
+    /// True when in-app update checking is available.
+    /// False on WebAssembly and when the app was installed from a store
+    /// (the store handles updates in that case).
     /// </summary>
-    public bool IsUpdateSupported { get; } =
-#if __BROWSERWASM__
-        false;
-#else
-        true;
-#endif
+    public bool IsUpdateSupported { get; }
 
     /// <summary>True on Android only — used to show the Exit App button.</summary>
     public bool IsAndroid { get; } =
@@ -238,6 +243,13 @@ public partial class SettingsViewModel : ObservableObject
         // Reflect current auth state immediately
         IsGoogleSignedIn   = _googleAuthService.IsSignedIn;
         GoogleAccountEmail = _googleAuthService.UserEmail ?? string.Empty;
+
+        // Hide the update section entirely for store installs and WebAssembly
+#if __BROWSERWASM__
+        IsUpdateSupported = false;
+#else
+        IsUpdateSupported = !_updateService.IsStoreInstall;
+#endif
 
         // Reflect any update already found/downloaded in the background on startup
         if (_updateService.IsUpdateAvailable)

@@ -533,8 +533,8 @@
                                     <Button Content="Check for Updates"
                                             Command="{Binding CheckForUpdatesCommand}"
                                             IsEnabled="{Binding IsCheckingForUpdates, Converter={StaticResource InverseBoolConverter}}" />
-                                    <!-- Desktop: update downloaded — install immediately -->
-                                    <Button Content="Restart &amp; Install Update"
+                                    <!-- Update downloaded — install (Android: launches installer, Desktop: restarts) -->
+                                    <Button Content="{Binding InstallButtonText}"
                                             Command="{Binding InstallUpdateCommand}"
                                             Style="{StaticResource FilledTonalButtonStyle}"
                                             Visibility="{Binding IsUpdateReady, Converter={StaticResource BoolToVisibilityConverter}}" />

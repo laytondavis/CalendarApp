@@ -180,10 +180,11 @@ public partial class App : Application
             // Initialize read-only Google accounts from config
             await InitializeReadOnlyGoogleAccountsAsync();
 
-            // Check for app updates in the background (desktop only).
-            // If a newer release is found on GitHub it is downloaded silently;
-            // it will be applied the next time the app is launched.
-            _ = CheckForUpdatesAsync();
+            // Start periodic update checks: first after 2 minutes, then every 48 hours.
+            // On Android sideloads this downloads the APK in the background.
+            // On desktop Velopack downloads the update silently.
+            // If installed from a store, the service no-ops automatically.
+            StartPeriodicUpdateChecks();
         }
         catch (Exception ex)
         {
@@ -385,21 +386,22 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// Silently checks for a newer version on startup via the registered IUpdateService.
-    /// Downloads the update in the background; the user can then apply it from the
-    /// Settings → About tab without restarting manually.
+    /// Starts the periodic background update checker.
+    /// First check 2 minutes after startup, then every 48 hours.
     /// </summary>
-    private async Task CheckForUpdatesAsync()
+    private void StartPeriodicUpdateChecks()
     {
         try
         {
             if (Host == null) return;
             var updateService = Host.Services.GetRequiredService<IUpdateService>();
-            await updateService.CheckAndDownloadAsync();   // no progress reporting on silent check
+            updateService.StartPeriodicChecks(
+                initialDelay: TimeSpan.FromMinutes(2),
+                interval: TimeSpan.FromHours(48));
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[CalendarApp] Background update check failed: {ex.Message}");
+            Console.WriteLine($"[CalendarApp] Failed to start periodic update checks: {ex.Message}");
         }
     }
 }
