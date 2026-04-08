@@ -1,73 +1,87 @@
 <ResourceDictionary xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
   <!-- Windows XP / Luna "Blue" palette
-       The signature XP accent blue (#245EDC) pairs with the warm silver-tan
-       desktop colour (#ECE9D8) that most users remember as the XP default.
-       Title bars used a gradient from #0A246A to #A6CAF0; we approximate that
-       with the primary colour tokens. -->
+       The iconic XP look: warm silver-tan chrome (#ECE9D8), bold Luna blue
+       title bars (#003399), and that distinctive green Start button.
+       Includes 3D raised-bevel brushes for that classic Windows look. -->
   <ResourceDictionary.ThemeDictionaries>
 
     <ResourceDictionary x:Key="Light">
-      <Color x:Key="PrimaryColor">#245EDC</Color>
+      <!-- XP Luna title-bar blue -->
+      <Color x:Key="PrimaryColor">#003399</Color>
       <Color x:Key="OnPrimaryColor">#FFFFFF</Color>
-      <Color x:Key="PrimaryContainerColor">#CEE0FD</Color>
-      <Color x:Key="OnPrimaryContainerColor">#001B55</Color>
+      <Color x:Key="PrimaryContainerColor">#B8D4FF</Color>
+      <Color x:Key="OnPrimaryContainerColor">#001A4D</Color>
+      <!-- XP selection highlight blue -->
       <Color x:Key="SecondaryColor">#316AC5</Color>
       <Color x:Key="OnSecondaryColor">#FFFFFF</Color>
-      <Color x:Key="SecondaryContainerColor">#D6E4FF</Color>
+      <Color x:Key="SecondaryContainerColor">#C8DEFF</Color>
       <Color x:Key="OnSecondaryContainerColor">#001B55</Color>
-      <Color x:Key="TertiaryColor">#5B7A2D</Color>
+      <!-- XP Start button green -->
+      <Color x:Key="TertiaryColor">#21A121</Color>
       <Color x:Key="OnTertiaryColor">#FFFFFF</Color>
-      <Color x:Key="TertiaryContainerColor">#DAEFB6</Color>
-      <Color x:Key="OnTertiaryContainerColor">#192100</Color>
-      <Color x:Key="ErrorColor">#B3261E</Color>
-      <Color x:Key="ErrorContainerColor">#F9DEDC</Color>
+      <Color x:Key="TertiaryContainerColor">#C8F7C8</Color>
+      <Color x:Key="OnTertiaryContainerColor">#003A00</Color>
+      <Color x:Key="ErrorColor">#CC0000</Color>
+      <Color x:Key="ErrorContainerColor">#FFD4D4</Color>
       <Color x:Key="OnErrorColor">#FFFFFF</Color>
-      <Color x:Key="OnErrorContainerColor">#410E0B</Color>
-      <!-- ECE9D8 is the warm silver/tan that Windows XP used for window chrome -->
+      <Color x:Key="OnErrorContainerColor">#5A0000</Color>
+      <!-- Warm silver-tan XP chrome -->
       <Color x:Key="BackgroundColor">#ECE9D8</Color>
       <Color x:Key="OnBackgroundColor">#000000</Color>
-      <Color x:Key="SurfaceColor">#F5F5F5</Color>
+      <!-- Creamy XP dialog interior -->
+      <Color x:Key="SurfaceColor">#F8F4E8</Color>
       <Color x:Key="OnSurfaceColor">#000000</Color>
-      <Color x:Key="SurfaceVariantColor">#E0DDD4</Color>
-      <Color x:Key="OnSurfaceVariantColor">#4F4B40</Color>
-      <Color x:Key="OutlineColor">#ACA899</Color>
+      <Color x:Key="SurfaceVariantColor">#E0DCCA</Color>
+      <Color x:Key="OnSurfaceVariantColor">#3A3A2E</Color>
+      <Color x:Key="OutlineColor">#808080</Color>
       <Color x:Key="OnSurfaceInverseColor">#ECE9D8</Color>
-      <Color x:Key="SurfaceInverseColor">#313031</Color>
+      <Color x:Key="SurfaceInverseColor">#2D2D26</Color>
       <Color x:Key="PrimaryInverseColor">#A9C9FB</Color>
-      <Color x:Key="SurfaceTintColor">#245EDC</Color>
-      <Color x:Key="OutlineVariantColor">#CCC9BF</Color>
+      <Color x:Key="SurfaceTintColor">#003399</Color>
+      <Color x:Key="OutlineVariantColor">#ACA899</Color>
+
+      <!-- 3D bevel brushes for raised/inset effects -->
+      <SolidColorBrush x:Key="Bevel3DHighlightBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="Bevel3DShadowBrush" Color="#808080" />
+      <SolidColorBrush x:Key="Bevel3DDarkShadowBrush" Color="#404040" />
+      <SolidColorBrush x:Key="Bevel3DLightBrush" Color="#D6D3C2" />
     </ResourceDictionary>
 
     <ResourceDictionary x:Key="Dark">
-      <Color x:Key="PrimaryColor">#245EDC</Color>
+      <Color x:Key="PrimaryColor">#003399</Color>
       <Color x:Key="OnPrimaryColor">#FFFFFF</Color>
-      <Color x:Key="PrimaryContainerColor">#CEE0FD</Color>
-      <Color x:Key="OnPrimaryContainerColor">#001B55</Color>
+      <Color x:Key="PrimaryContainerColor">#B8D4FF</Color>
+      <Color x:Key="OnPrimaryContainerColor">#001A4D</Color>
       <Color x:Key="SecondaryColor">#316AC5</Color>
       <Color x:Key="OnSecondaryColor">#FFFFFF</Color>
-      <Color x:Key="SecondaryContainerColor">#D6E4FF</Color>
+      <Color x:Key="SecondaryContainerColor">#C8DEFF</Color>
       <Color x:Key="OnSecondaryContainerColor">#001B55</Color>
-      <Color x:Key="TertiaryColor">#5B7A2D</Color>
+      <Color x:Key="TertiaryColor">#21A121</Color>
       <Color x:Key="OnTertiaryColor">#FFFFFF</Color>
-      <Color x:Key="TertiaryContainerColor">#DAEFB6</Color>
-      <Color x:Key="OnTertiaryContainerColor">#192100</Color>
-      <Color x:Key="ErrorColor">#B3261E</Color>
-      <Color x:Key="ErrorContainerColor">#F9DEDC</Color>
+      <Color x:Key="TertiaryContainerColor">#C8F7C8</Color>
+      <Color x:Key="OnTertiaryContainerColor">#003A00</Color>
+      <Color x:Key="ErrorColor">#CC0000</Color>
+      <Color x:Key="ErrorContainerColor">#FFD4D4</Color>
       <Color x:Key="OnErrorColor">#FFFFFF</Color>
-      <Color x:Key="OnErrorContainerColor">#410E0B</Color>
+      <Color x:Key="OnErrorContainerColor">#5A0000</Color>
       <Color x:Key="BackgroundColor">#ECE9D8</Color>
       <Color x:Key="OnBackgroundColor">#000000</Color>
-      <Color x:Key="SurfaceColor">#F5F5F5</Color>
+      <Color x:Key="SurfaceColor">#F8F4E8</Color>
       <Color x:Key="OnSurfaceColor">#000000</Color>
-      <Color x:Key="SurfaceVariantColor">#E0DDD4</Color>
-      <Color x:Key="OnSurfaceVariantColor">#4F4B40</Color>
-      <Color x:Key="OutlineColor">#ACA899</Color>
+      <Color x:Key="SurfaceVariantColor">#E0DCCA</Color>
+      <Color x:Key="OnSurfaceVariantColor">#3A3A2E</Color>
+      <Color x:Key="OutlineColor">#808080</Color>
       <Color x:Key="OnSurfaceInverseColor">#ECE9D8</Color>
-      <Color x:Key="SurfaceInverseColor">#313031</Color>
+      <Color x:Key="SurfaceInverseColor">#2D2D26</Color>
       <Color x:Key="PrimaryInverseColor">#A9C9FB</Color>
-      <Color x:Key="SurfaceTintColor">#245EDC</Color>
-      <Color x:Key="OutlineVariantColor">#CCC9BF</Color>
+      <Color x:Key="SurfaceTintColor">#003399</Color>
+      <Color x:Key="OutlineVariantColor">#ACA899</Color>
+
+      <SolidColorBrush x:Key="Bevel3DHighlightBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="Bevel3DShadowBrush" Color="#808080" />
+      <SolidColorBrush x:Key="Bevel3DDarkShadowBrush" Color="#404040" />
+      <SolidColorBrush x:Key="Bevel3DLightBrush" Color="#D6D3C2" />
     </ResourceDictionary>
 
   </ResourceDictionary.ThemeDictionaries>

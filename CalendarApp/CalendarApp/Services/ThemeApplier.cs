@@ -21,6 +21,16 @@ public static class ThemeApplier
     // next theme change.
     private static ResourceDictionary? _activePalette;
 
+    /// <summary>
+    /// The name of the currently applied theme (e.g. "WindowsXP", "MacOSClassic").
+    /// </summary>
+    public static string CurrentTheme { get; private set; } = "System";
+
+    /// <summary>
+    /// True when the active theme uses 3D beveled styling (Windows XP, Classic macOS).
+    /// </summary>
+    public static bool Uses3DBevels => CurrentTheme is "WindowsXP" or "MacOSClassic";
+
     // Maps the DB storage key → (optional palette URI, ElementTheme to apply)
     private static readonly Dictionary<string, (string? PaletteUri, ElementTheme Theme)> ThemeConfig =
         new(StringComparer.OrdinalIgnoreCase)
@@ -44,6 +54,8 @@ public static class ThemeApplier
     {
         if (!ThemeConfig.TryGetValue(themeName, out var config))
             config = ThemeConfig["System"];
+
+        CurrentTheme = themeName;
 
         var appResources = Application.Current.Resources;
 

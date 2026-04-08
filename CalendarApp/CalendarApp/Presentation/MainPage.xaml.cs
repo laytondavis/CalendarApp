@@ -104,11 +104,24 @@ public sealed partial class MainPage : Page
     {
         var border = new Border
         {
-            BorderBrush = new SolidColorBrush(Colors.LightGray),
-            BorderThickness = new Thickness(0, 0, 1, 1),
             MinHeight = 80,
             Padding = new Thickness(4),
         };
+
+        // 3D beveled borders for XP / Classic macOS themes;
+        // flat single-pixel border for modern/flat themes
+        if (Services.ThemeApplier.Uses3DBevels)
+        {
+            // Raised 3D effect: light top/left, dark bottom/right
+            border.BorderBrush = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 128, 128, 128));
+            border.BorderThickness = new Thickness(1, 1, 2, 2);
+            border.Background = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(20, 255, 255, 255));
+        }
+        else
+        {
+            border.BorderBrush = new SolidColorBrush(Colors.LightGray);
+            border.BorderThickness = new Thickness(0, 0, 1, 1);
+        }
 
         var grid = new Grid();
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -314,10 +327,21 @@ public sealed partial class MainPage : Page
     {
         var border = new Border
         {
-            CornerRadius = new CornerRadius(8),
             Padding = new Thickness(12),
             Margin = new Thickness(4),
         };
+
+        if (Services.ThemeApplier.Uses3DBevels)
+        {
+            // Raised 3D panel effect
+            border.CornerRadius = new CornerRadius(2);
+            border.BorderBrush = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 128, 128, 128));
+            border.BorderThickness = new Thickness(1, 1, 2, 2);
+        }
+        else
+        {
+            border.CornerRadius = new CornerRadius(8);
+        }
 
         var panel = new StackPanel();
 
