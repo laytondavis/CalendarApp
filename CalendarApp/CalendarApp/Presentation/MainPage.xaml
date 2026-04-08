@@ -104,12 +104,14 @@
                     Padding="14,6"
                     CornerRadius="16"
                     Background="{ThemeResource SurfaceBrush}"
+                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                     BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     ToolTipService.ToolTip="Click to jump to a specific year">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <TextBlock Text="{Binding DisplayMonthYear}"
                                Style="{StaticResource TitleTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                VerticalAlignment="Center" />
                     <FontIcon Glyph="&#xE70D;"
                               FontSize="11"
@@ -120,7 +122,7 @@
                     <Flyout Placement="Bottom">
                         <Flyout.FlyoutPresenterStyle>
                             <Style TargetType="FlyoutPresenter">
-                                <Setter Property="Background" Value="White" />
+                                <Setter Property="Background" Value="{ThemeResource SurfaceBrush}" />
                             </Style>
                         </Flyout.FlyoutPresenterStyle>
                         <StackPanel Spacing="8" Padding="4" MinWidth="220">
