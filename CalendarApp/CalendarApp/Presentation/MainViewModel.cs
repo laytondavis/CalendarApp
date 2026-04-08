@@ -212,6 +212,8 @@ public partial class MainViewModel : ObservableObject
 
         PreviousCommand = new AsyncRelayCommand(NavigatePreviousAsync);
         NextCommand = new AsyncRelayCommand(NavigateNextAsync);
+        PreviousYearCommand = new AsyncRelayCommand(NavigatePreviousYearAsync);
+        NextYearCommand = new AsyncRelayCommand(NavigateNextYearAsync);
         TodayCommand = new AsyncRelayCommand(NavigateToTodayAsync);
         SelectDateCommand = new AsyncRelayCommand<CalendarDayViewModel>(SelectDateAsync);
         ChangeViewCommand = new RelayCommand<string>(ChangeViewFromString);
@@ -385,6 +387,8 @@ public partial class MainViewModel : ObservableObject
 
     public ICommand PreviousCommand { get; }
     public ICommand NextCommand { get; }
+    public ICommand PreviousYearCommand { get; }
+    public ICommand NextYearCommand { get; }
     public ICommand TodayCommand { get; }
     public ICommand SelectDateCommand { get; }
     public ICommand ChangeViewCommand { get; }
@@ -1259,6 +1263,18 @@ public partial class MainViewModel : ObservableObject
             CalendarViewType.Agenda => DisplayDate.AddDays(30),
             _ => DisplayDate.AddMonths(1)
         };
+        await LoadViewDataAsync();
+    }
+
+    private async Task NavigatePreviousYearAsync()
+    {
+        DisplayDate = DisplayDate.AddYears(-1);
+        await LoadViewDataAsync();
+    }
+
+    private async Task NavigateNextYearAsync()
+    {
+        DisplayDate = DisplayDate.AddYears(1);
         await LoadViewDataAsync();
     }
 

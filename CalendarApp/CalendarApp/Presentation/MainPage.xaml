@@ -73,27 +73,49 @@
         <Grid Grid.Row="2" Padding="16,4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <Button Command="{Binding PreviousCommand}"
-                    Style="{StaticResource IconButtonStyle}">
+            <!-- Double-arrow: skip back one year -->
+            <Button Command="{Binding PreviousYearCommand}"
+                    Style="{StaticResource IconButtonStyle}"
+                    Padding="6,4"
+                    ToolTipService.ToolTip="Previous year">
+                <FontIcon Glyph="&#xE72B;" FontSize="16" />
+            </Button>
+
+            <!-- Single-arrow: step back one period -->
+            <Button Grid.Column="1"
+                    Command="{Binding PreviousCommand}"
+                    Style="{StaticResource IconButtonStyle}"
+                    Padding="4,4"
+                    ToolTipService.ToolTip="Previous">
                 <FontIcon Glyph="&#xE76B;" FontSize="20" />
             </Button>
 
-            <!-- Clickable title with Year Jump flyout -->
+            <!-- Clickable title with Year Jump flyout — styled as a pill button -->
             <Button x:Name="NavigationTitleButton"
-                    Grid.Column="1"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                    Grid.Column="2"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Padding="8,4"
+                    Padding="14,6"
+                    CornerRadius="16"
+                    Background="{ThemeResource SurfaceBrush}"
+                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                    BorderThickness="1"
                     ToolTipService.ToolTip="Click to jump to a specific year">
-                <TextBlock Text="{Binding DisplayMonthYear}"
-                           Style="{StaticResource TitleTextBlockStyle}" />
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="{Binding DisplayMonthYear}"
+                               Style="{StaticResource TitleTextBlockStyle}"
+                               VerticalAlignment="Center" />
+                    <FontIcon Glyph="&#xE70D;"
+                              FontSize="11"
+                              VerticalAlignment="Center"
+                              Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
                 <Button.Flyout>
                     <Flyout Placement="Bottom">
                         <Flyout.FlyoutPresenterStyle>
@@ -126,10 +148,22 @@
                 </Button.Flyout>
             </Button>
 
-            <Button Grid.Column="2"
+            <!-- Single-arrow: step forward one period -->
+            <Button Grid.Column="3"
                     Command="{Binding NextCommand}"
-                    Style="{StaticResource IconButtonStyle}">
+                    Style="{StaticResource IconButtonStyle}"
+                    Padding="4,4"
+                    ToolTipService.ToolTip="Next">
                 <FontIcon Glyph="&#xE76C;" FontSize="20" />
+            </Button>
+
+            <!-- Double-arrow: skip forward one year -->
+            <Button Grid.Column="4"
+                    Command="{Binding NextYearCommand}"
+                    Style="{StaticResource IconButtonStyle}"
+                    Padding="6,4"
+                    ToolTipService.ToolTip="Next year">
+                <FontIcon Glyph="&#xE72A;" FontSize="16" />
             </Button>
         </Grid>
 
