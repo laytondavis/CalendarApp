@@ -53,9 +53,9 @@ public sealed partial class SettingsPage : Page
     }
 
     /// <summary>
-    /// Directly sets Tab 1 control values from the ViewModel, bypassing bindings
-    /// that may not have connected due to TabView lazy content realization.
-    /// Controls are inside TabViewItem (separate namescope) so we use FindName.
+    /// Sets Tab 1 control values from the ViewModel AND wires up change handlers
+    /// so user interactions are pushed back to the ViewModel (since {Binding} may
+    /// not be connected due to TabView lazy content realization).
     /// </summary>
     private void PopulateTab1Controls(SettingsViewModel vm)
     {
@@ -65,38 +65,41 @@ public sealed partial class SettingsPage : Page
 
         try
         {
-            if (FindName("ThemeComboBox") is ComboBox theme)
-                theme.SelectedIndex = vm.SelectedThemeIndex;
-            else
-                Console.WriteLine("[SettingsPage] ThemeComboBox not found via FindName");
+            // Helper to wire ComboBox → ViewModel (TwoWay binding replacement)
+            void WireComboBox(string name, int initialIndex, Action<int> onChanged)
+            {
+                if (FindName(name) is ComboBox cb)
+                {
+                    cb.SelectedIndex = initialIndex;
+                    cb.SelectionChanged += (_, _) => { if (cb.SelectedIndex >= 0) onChanged(cb.SelectedIndex); };
+                }
+                else
+                    Console.WriteLine($"[SettingsPage] {name} not found via FindName");
+            }
+
+            // Helper to wire CheckBox → ViewModel
+            void WireCheckBox(string name, bool initialValue, Action<bool> onChanged)
+            {
+                if (FindName(name) is CheckBox chk)
+                {
+                    chk.IsChecked = initialValue;
+                    chk.Checked += (_, _) => onChanged(true);
+                    chk.Unchecked += (_, _) => onChanged(false);
+                }
+            }
+
+            WireComboBox("ThemeComboBox", vm.SelectedThemeIndex, v => vm.SelectedThemeIndex = v);
+            WireComboBox("CalendarModeComboBox", vm.SelectedCalendarModeIndex, v => vm.SelectedCalendarModeIndex = v);
+            WireComboBox("AstronomyModeComboBox", vm.SelectedAstronomyModeIndex, v => vm.SelectedAstronomyModeIndex = v);
 
             if (FindName("CalendarModeComboBox") is ComboBox calMode)
-            {
-                calMode.SelectedIndex = vm.SelectedCalendarModeIndex;
                 calMode.IsEnabled = vm.IsCalendarModeEditable;
-            }
-            else
-                Console.WriteLine("[SettingsPage] CalendarModeComboBox not found via FindName");
 
-            if (FindName("AstronomyModeComboBox") is ComboBox astro)
-                astro.SelectedIndex = vm.SelectedAstronomyModeIndex;
-            else
-                Console.WriteLine("[SettingsPage] AstronomyModeComboBox not found via FindName");
-
-            if (FindName("UseLastCalTypeCheckBox") is CheckBox useLastCal)
-                useLastCal.IsChecked = vm.UseLastSelectedCalendarType;
-
-            if (FindName("ShowBiblicalHolidaysCheckBox") is CheckBox showHolidays)
-                showHolidays.IsChecked = vm.ShowBiblicalHolidays;
-
-            if (FindName("ShowGregorianEventsCheckBox") is CheckBox showGreg)
-                showGreg.IsChecked = vm.ShowGregorianEvents;
-
-            if (FindName("ShowJulianEventsCheckBox") is CheckBox showJulian)
-                showJulian.IsChecked = vm.ShowJulianEvents;
-
-            if (FindName("ShowBiblicalEventsCheckBox") is CheckBox showBiblical)
-                showBiblical.IsChecked = vm.ShowBiblicalEvents;
+            WireCheckBox("UseLastCalTypeCheckBox", vm.UseLastSelectedCalendarType, v => vm.UseLastSelectedCalendarType = v);
+            WireCheckBox("ShowBiblicalHolidaysCheckBox", vm.ShowBiblicalHolidays, v => vm.ShowBiblicalHolidays = v);
+            WireCheckBox("ShowGregorianEventsCheckBox", vm.ShowGregorianEvents, v => vm.ShowGregorianEvents = v);
+            WireCheckBox("ShowJulianEventsCheckBox", vm.ShowJulianEvents, v => vm.ShowJulianEvents = v);
+            WireCheckBox("ShowBiblicalEventsCheckBox", vm.ShowBiblicalEvents, v => vm.ShowBiblicalEvents = v);
 
             Console.WriteLine("[SettingsPage] PopulateTab1Controls — done");
         }

@@ -8,6 +8,31 @@ namespace CalendarApp.Presentation;
 
 public sealed partial class MainPage : Page
 {
+    // ── Theme-aware brush helpers ────────────────────────────────────────
+    // Resolve brushes from the app's ThemeDictionaries so they respect
+    // the current Light/Dark/Custom theme at the time of grid rebuild.
+
+    private static Brush GetPrimaryTextBrush()
+    {
+        if (Application.Current.Resources.TryGetValue("OnSurfaceColor", out var colorObj) && colorObj is Windows.UI.Color color)
+            return new SolidColorBrush(color);
+        return GetPrimaryTextBrush();
+    }
+
+    private static Brush GetSecondaryTextBrush()
+    {
+        if (Application.Current.Resources.TryGetValue("OnSurfaceVariantColor", out var colorObj) && colorObj is Windows.UI.Color color)
+            return new SolidColorBrush(color);
+        return GetSecondaryTextBrush();
+    }
+
+    private static Brush GetDividerBrush()
+    {
+        if (Application.Current.Resources.TryGetValue("OutlineVariantColor", out var colorObj) && colorObj is Windows.UI.Color color)
+            return new SolidColorBrush(color);
+        return GetDividerBrush();
+    }
+
     private MainViewModel? _viewModel;
 
     public MainPage()
@@ -119,7 +144,7 @@ public sealed partial class MainPage : Page
         }
         else
         {
-            border.BorderBrush = new SolidColorBrush(Colors.LightGray);
+            border.BorderBrush = GetDividerBrush();
             border.BorderThickness = new Thickness(0, 0, 1, 1);
         }
 
@@ -155,7 +180,7 @@ public sealed partial class MainPage : Page
             Opacity = day.IsCurrentMonth ? 1.0 : 0.4,
             Foreground = day.IsToday
                 ? new SolidColorBrush(Colors.White)
-                : (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"]
+                : GetPrimaryTextBrush()
         };
 
         if (day.IsToday)
@@ -176,7 +201,7 @@ public sealed partial class MainPage : Page
             {
                 Text = day.CrossReference ?? "",
                 FontSize = 9,
-                Foreground = new SolidColorBrush(Colors.Gray),
+                Foreground = GetSecondaryTextBrush(),
                 TextTrimming = TextTrimming.CharacterEllipsis,
                 MaxLines = 1
             });
@@ -188,7 +213,7 @@ public sealed partial class MainPage : Page
             {
                 Text = day.DayStartDisplay ?? "",
                 FontSize = 9,
-                Foreground = new SolidColorBrush(Colors.Gray),
+                Foreground = GetSecondaryTextBrush(),
                 TextTrimming = TextTrimming.CharacterEllipsis,
                 MaxLines = 1
             });
@@ -366,7 +391,7 @@ public sealed partial class MainPage : Page
                 Text = dayHeaders[c],
                 FontSize = 10,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Foreground = new SolidColorBrush(Colors.Gray)
+                Foreground = GetSecondaryTextBrush()
             };
             Grid.SetColumn(header, c);
             headerGrid.Children.Add(header);
@@ -451,7 +476,7 @@ public sealed partial class MainPage : Page
                             ? new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 0, 160, 120))
                             : day.IsHoliday
                                 ? new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 200, 130, 0))
-                                : (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"]
+                                : GetPrimaryTextBrush()
                 };
                 cell.Children.Add(dayText);
 
