@@ -36,9 +36,19 @@ public sealed partial class SettingsPage : Page
             // The TabView lazily realizes tab content, so {Binding} expressions
             // on ComboBoxes/CheckBoxes inside the first tab may never receive the
             // initial PropertyChanged. Bypass the binding system entirely and set
-            // controls directly from code-behind after a yield.
-            await Task.Delay(150);
-            PopulateTab1Controls(vm);
+            // controls directly from code-behind once they exist.
+            // Poll with short delays until FindName succeeds (up to 3 seconds).
+            for (int attempt = 0; attempt < 30; attempt++)
+            {
+                await Task.Delay(100);
+                if (FindName("ThemeComboBox") != null)
+                {
+                    Console.WriteLine($"[SettingsPage] Tab 1 controls found after {(attempt + 1) * 100}ms");
+                    PopulateTab1Controls(vm);
+                    return;
+                }
+            }
+            Console.WriteLine("[SettingsPage] Tab 1 controls never appeared after 3s");
         }
     }
 
