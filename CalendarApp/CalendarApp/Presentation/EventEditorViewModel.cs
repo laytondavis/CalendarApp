@@ -464,13 +464,6 @@ public partial class EventEditorViewModel : ObservableObject
 
             if (_isNewEvent)
             {
-                SyncDiagnosticLog.Write(
-                    $"EventEditor.Save: NEW EVENT — Title='{Title.Trim()}'" +
-                    $", IsGoogleEvent={IsGoogleEvent}" +
-                    $", SignedIn={_authService.IsSignedIn}" +
-                    $", SelectedGCalIdx={SelectedGoogleCalendarIndex}" +
-                    $", AvailableGCals={AvailableGoogleCalendars.Count}");
-
                 // Should this event be synced to a Google calendar?
                 bool wantsGoogle = !IsGoogleEvent && _authService.IsSignedIn
                     && SelectedGoogleCalendarIndex > 0
@@ -524,13 +517,7 @@ public partial class EventEditorViewModel : ObservableObject
                     var targetCal = AvailableGoogleCalendars[SelectedGoogleCalendarIndex - 1];
                     newEvent.CalendarId = targetCal.Id;
                     newEvent.SyncStatus = SyncStatus.PendingUpload;
-                    SyncDiagnosticLog.Write(
-                        $"EventEditor.Save: path=wantsGoogle, targetCal={targetCal.Id}" +
-                        $" ('{targetCal.Summary}'), inserting as PendingUpload");
                     await _eventRepository.InsertAsync(newEvent);
-                    SyncDiagnosticLog.Write(
-                        $"EventEditor.Save: inserted locally with Id={newEvent.Id}" +
-                        $", GoogleEventId='{newEvent.GoogleEventId}' — triggering immediate sync");
 
                     // Trigger an immediate sync so the event appears on Google promptly
                     _ = _syncService.SyncAsync(targetCal.Id);
@@ -542,12 +529,7 @@ public partial class EventEditorViewModel : ObservableObject
                     newEvent.SyncStatus = _authService.IsSignedIn
                         ? SyncStatus.PendingUpload
                         : SyncStatus.Synced;
-                    SyncDiagnosticLog.Write(
-                        $"EventEditor.Save: path=local-only" +
-                        $", SyncStatus={newEvent.SyncStatus}, inserting");
                     await _eventRepository.InsertAsync(newEvent);
-                    SyncDiagnosticLog.Write(
-                        $"EventEditor.Save: inserted locally with Id={newEvent.Id}");
                 }
             }
             else if (_editingEventId.HasValue)
