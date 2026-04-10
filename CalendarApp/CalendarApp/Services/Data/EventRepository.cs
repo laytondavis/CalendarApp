@@ -135,6 +135,10 @@ public class EventRepository : IEventRepository
         entity.LastModifiedUtc = DateTime.UtcNow;
 
         await _context.Connection.InsertAsync(entity);
+        calendarEvent.Id = entity.Id; // propagate DB-assigned Id back to caller
+        SyncDiagnosticLog.Write(
+            $"EventRepo.Insert: '{calendarEvent.Title}' → Id={entity.Id}" +
+            $", gId='{calendarEvent.GoogleEventId}', status={calendarEvent.SyncStatus}");
 
         // Insert reminders
         foreach (var reminder in calendarEvent.Reminders)
@@ -176,7 +180,12 @@ public class EventRepository : IEventRepository
         entity.LastModifiedUtc = DateTime.UtcNow;
         entity.RecurrenceId = existingRecurrenceId; // preserve until recurrence logic below
 
-        await _context.Connection.UpdateAsync(entity);
+        var rows = await _context.Connection.UpdateAsync(entity);
+        SyncDiagnosticLog.Write(
+            $"EventRepo.Update: Id={calendarEvent.Id} '{calendarEvent.Title}'" +
+            $" gId='{calendarEvent.GoogleEventId}', status={calendarEvent.SyncStatus}" +
+            $" — rowsAffected={rows}" +
+            (existing == null ? " (NO MATCHING ROW!)" : ""));
 
         // Update reminders - delete existing and re-insert
         await _context.Connection.Table<ReminderEntity>()

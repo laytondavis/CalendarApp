@@ -464,6 +464,18 @@ public partial class EventEditorViewModel : ObservableObject
 
             if (_isNewEvent)
             {
+                SyncDiagnosticLog.Write(
+                    $"EventEditor.Save: NEW EVENT — Title='{Title.Trim()}'" +
+                    $", IsGoogleEvent={IsGoogleEvent}" +
+                    $", SignedIn={_authService.IsSignedIn}" +
+                    $", SelectedGCalIdx={SelectedGoogleCalendarIndex}" +
+                    $", AvailableGCals={AvailableGoogleCalendars.Count}");
+
+                // Should this event be synced to a Google calendar?
+                bool wantsGoogle = !IsGoogleEvent && _authService.IsSignedIn
+                    && SelectedGoogleCalendarIndex > 0
+                    && SelectedGoogleCalendarIndex - 1 < AvailableGoogleCalendars.Count;
+
                 var newEvent = new CalendarEvent
                 {
                     Title = Title.Trim(),
@@ -475,7 +487,6 @@ public partial class EventEditorViewModel : ObservableObject
                     ColorHex = SelectedColor,
                     CalendarMode = calendarMode,
                     EventScope = eventScope,
-                    SyncStatus = _authService.IsSignedIn ? SyncStatus.PendingUpload : SyncStatus.Synced,
                     LastModifiedUtc = DateTime.UtcNow
                 };
 
@@ -504,29 +515,39 @@ public partial class EventEditorViewModel : ObservableObject
                     }
                 }
 
-                await _eventRepository.InsertAsync(newEvent);
-
-                // Push to a Google calendar if the user selected one
-                if (!IsGoogleEvent && _authService.IsSignedIn
-                    && SelectedGoogleCalendarIndex > 0
-                    && SelectedGoogleCalendarIndex - 1 < AvailableGoogleCalendars.Count)
+                if (wantsGoogle)
                 {
+                    // Insert as PendingUpload with the target CalendarId, then let
+                    // SyncService handle the push+pull atomically. This avoids races
+                    // where both EventEditorViewModel and SyncService write to Google
+                    // or where a pull interleaves with a direct push.
                     var targetCal = AvailableGoogleCalendars[SelectedGoogleCalendarIndex - 1];
                     newEvent.CalendarId = targetCal.Id;
-                    var createResult = await _googleCalendarService.CreateEventAsync(newEvent, targetCal.Id);
-                    if (createResult.Success)
-                    {
-                        newEvent.GoogleEventId = createResult.GoogleEventId ?? string.Empty;
-                        newEvent.ETag = createResult.ETag ?? string.Empty;
-                        newEvent.SyncStatus = SyncStatus.Synced;
-                        await _eventRepository.UpdateAsync(newEvent);
-                    }
-                    else
-                    {
-                        ErrorMessage = $"Saved locally, but could not add to Google Calendar: {createResult.ErrorMessage}";
-                        IsBusy = false;
-                        return; // Stay on page so user can see the error
-                    }
+                    newEvent.SyncStatus = SyncStatus.PendingUpload;
+                    SyncDiagnosticLog.Write(
+                        $"EventEditor.Save: path=wantsGoogle, targetCal={targetCal.Id}" +
+                        $" ('{targetCal.Summary}'), inserting as PendingUpload");
+                    await _eventRepository.InsertAsync(newEvent);
+                    SyncDiagnosticLog.Write(
+                        $"EventEditor.Save: inserted locally with Id={newEvent.Id}" +
+                        $", GoogleEventId='{newEvent.GoogleEventId}' — triggering immediate sync");
+
+                    // Trigger an immediate sync so the event appears on Google promptly
+                    _ = _syncService.SyncAsync(targetCal.Id);
+                }
+                else
+                {
+                    // Local-only event (or signed-in but no calendar selected —
+                    // SyncService will push to "primary" on the next cycle)
+                    newEvent.SyncStatus = _authService.IsSignedIn
+                        ? SyncStatus.PendingUpload
+                        : SyncStatus.Synced;
+                    SyncDiagnosticLog.Write(
+                        $"EventEditor.Save: path=local-only" +
+                        $", SyncStatus={newEvent.SyncStatus}, inserting");
+                    await _eventRepository.InsertAsync(newEvent);
+                    SyncDiagnosticLog.Write(
+                        $"EventEditor.Save: inserted locally with Id={newEvent.Id}");
                 }
             }
             else if (_editingEventId.HasValue)

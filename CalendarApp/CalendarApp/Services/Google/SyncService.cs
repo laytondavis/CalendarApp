@@ -134,7 +134,10 @@ public class SyncService : ISyncService
 
         try
         {
-            var pendingEvents = await _eventRepository.GetPendingSyncEventsAsync();
+            var pendingEvents = (await _eventRepository.GetPendingSyncEventsAsync()).ToList();
+            SyncDiagnosticLog.Write(
+                $"PushLocal [{calendarId}]: found {pendingEvents.Count} pending events " +
+                $"[{string.Join(", ", pendingEvents.Select(e => $"Id={e.Id}/gId='{e.GoogleEventId}'/status={e.SyncStatus}/deleted={e.IsDeleted}/title='{e.Title}'"))}]");
 
             foreach (var localEvent in pendingEvents)
             {
@@ -160,15 +163,42 @@ public class SyncService : ISyncService
                     }
                     else if (string.IsNullOrEmpty(localEvent.GoogleEventId))
                     {
+                        // Re-read from DB to guard against race: another code path
+                        // (e.g. EventEditorViewModel direct push) may have already
+                        // pushed this event and marked it Synced with a GoogleEventId.
+                        var fresh = await _eventRepository.GetByIdAsync(localEvent.Id);
+                        SyncDiagnosticLog.Write(
+                            $"PushLocal: re-read Id={localEvent.Id} — fresh is " +
+                            (fresh == null
+                                ? "null"
+                                : $"status={fresh.SyncStatus}, gId='{fresh.GoogleEventId}'"));
+                        if (fresh == null || fresh.SyncStatus != SyncStatus.PendingUpload
+                            || !string.IsNullOrEmpty(fresh.GoogleEventId))
+                        {
+                            SyncDiagnosticLog.Write($"PushLocal: skipping Id={localEvent.Id} — already handled");
+                            continue;
+                        }
+
                         // New local event - create on Google
-                        var createResult = await _googleCalendarService.CreateEventAsync(localEvent, calendarId);
+                        // Use the event's own CalendarId if set (e.g. user picked a
+                        // specific calendar in the editor), otherwise fall back to the
+                        // calendarId parameter (typically "primary").
+                        var targetCalId = !string.IsNullOrEmpty(localEvent.CalendarId)
+                            ? localEvent.CalendarId : calendarId;
+                        SyncDiagnosticLog.Write(
+                            $"PushLocal: creating on Google Id={localEvent.Id} '{localEvent.Title}' → {targetCalId}");
+                        var createResult = await _googleCalendarService.CreateEventAsync(localEvent, targetCalId);
+                        SyncDiagnosticLog.Write(
+                            $"PushLocal: Google create returned success={createResult.Success}, gId='{createResult.GoogleEventId}', err={createResult.ErrorMessage}");
                         if (createResult.Success)
                         {
                             localEvent.GoogleEventId = createResult.GoogleEventId!;
                             localEvent.ETag = createResult.ETag!;
                             localEvent.SyncStatus = SyncStatus.Synced;
-                            localEvent.CalendarId = calendarId;
+                            localEvent.CalendarId = targetCalId;
                             await _eventRepository.UpdateAsync(localEvent);
+                            SyncDiagnosticLog.Write(
+                                $"PushLocal: marked Id={localEvent.Id} Synced with gId='{localEvent.GoogleEventId}'");
                             result.EventsUploaded++;
                         }
                         else
@@ -260,6 +290,9 @@ public class SyncService : ISyncService
                 try
                 {
                     var existingLocal = await _eventRepository.GetByGoogleIdAsync(remoteEvent.GoogleEventId);
+                    SyncDiagnosticLog.Write(
+                        $"PullRemote: processing remote gId={remoteEvent.GoogleEventId} '{remoteEvent.Title}'" +
+                        $" — existingLocal={(existingLocal == null ? "null" : $"Id={existingLocal.Id}")}");
 
                     if (existingLocal == null)
                     {
@@ -268,7 +301,7 @@ public class SyncService : ISyncService
                         remoteEvent.SyncStatus = SyncStatus.Synced;
                         await _eventRepository.InsertAsync(remoteEvent);
                         result.EventsDownloaded++;
-                        SyncDiagnosticLog.Write($"PullRemote: inserted new event '{remoteEvent.Title}' (gId={remoteEvent.GoogleEventId})");
+                        SyncDiagnosticLog.Write($"PullRemote: inserted new event '{remoteEvent.Title}' (gId={remoteEvent.GoogleEventId}) localId={remoteEvent.Id}");
                     }
                     else
                     {
